@@ -144,8 +144,8 @@
 
     <div id="status-bar">⏳ 待机中</div>
 
-    <div class="info-zone">
-        <div class="label">当前已跑步时间</div>
+    <div class="time-box">
+        <div style="font-size:14px;color:#8e8e93">当前已跑步时间</div>
         <div id="total-time">00:00</div>
         <div id="prediction-box">请点击下方“开始跑步”按钮</div>
     </div>
@@ -199,24 +199,16 @@
         const userRunnerEl = document.getElementById('user-runner');
         const userKmText = document.getElementById('user-km-text');
 
-        // 彻底移除了媒体元素的控制，确保事件绝对顺畅启动
         function toggleTimer() {
             if (!isRunning) {
-                // 安全异步加载防熄屏组件，不卡死主线程
                 if ('wakeLock' in navigator) {
                     navigator.wakeLock.request('screen')
-                        .then(lock => { 
-                            wakeLock = lock; 
-                            statusBar.innerText = "🟢 屏幕常亮已激活";
-                        })
-                        .catch(e => {
-                            statusBar.innerText = "⏳ 计时中";
-                        });
+                        .then(lock => { wakeLock = lock; statusBar.innerText = "🟢 屏幕常亮已激活"; })
+                        .catch(e => { statusBar.innerText = "⏳ 计时中"; });
                 } else {
                     statusBar.innerText = "⏳ 计时中";
                 }
 
-                // 启动高精度秒表时钟
                 startTime = Date.now() - elapsedTime;
                 timerInterval = setInterval(() => {
                     elapsedTime = Date.now() - startTime;
@@ -225,7 +217,6 @@
                     let s = Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0');
                     timeEl.innerText = m + ":" + s;
                     
-                    // 🤖 赛道一：机械兔子向前匀速平滑推演
                     let elapsedSeconds = elapsedTime / 1000;
                     let pacerPercent = Math.min((elapsedSeconds / TARGET_TOTAL_SECONDS) * 100, 100);
                     pacerEl.style.left = pacerPercent + "%";
@@ -239,7 +230,6 @@
                 lapBtn.style.display = "block"; 
                 if(lapCount === 0) predictionBox.innerHTML = "冲！每到跑步机500米整点，点击绿色大键记录进度";
             } else {
-                // 暂停计时
                 clearInterval(timerInterval);
                 isRunning = false;
                 startBtn.innerText = "恢复";
@@ -264,7 +254,6 @@
 
             let kmDone = (lapCount * 0.5).toFixed(1);
 
-            // 🏃‍♂️ 赛道二：用户闪现进度校准
             let userPercent = (lapCount / 12) * 100;
             userRunnerEl.style.left = userPercent + "%";
             userKmText.innerText = kmDone + " km";
@@ -272,3 +261,12 @@
             const item = document.createElement('div');
             item.className = 'record-item';
             item.innerHTML = `<span>📍 已过 ${kmDone}k</span><span>本分段 ${durationMin}:${durationSec} | 累计 ${totalMin}:${totalSec}</span>`;
+            historyBox.insertBefore(item, historyBox.firstChild);
+            
+            calculateNextPrediction(kmDone);
+            try { window.navigator.vibrate(40); } catch(e) {}
+        }
+
+        // 🧮 按照目前均速，精密预测 6 公里最终的总花费时间
+        function calculateNextPrediction(kmDone) {
+            if (lapCount >= 12) {
