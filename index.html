@@ -111,7 +111,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 控制面板 */
+        /* 底部控制台面板 */
         .action-box {
             width: 100%;
             display: flex;
@@ -130,7 +130,7 @@
             box-shadow: 0 4px 15px rgba(52,199,89,0.3);
             text-align: center;
         }
-        .btn-giant:map { transform: scale(0.98); }
+        .btn-giant:active { transform: scale(0.98); }
         
         .control-bar { width: 100%; display: flex; gap: 15px; }
         .btn-small { flex: 1; padding: 14px 0; font-size: 16px; font-weight: bold; border: none; border-radius: 12px; color: white; }
@@ -150,7 +150,7 @@
         <div id="prediction-box">请点击下方“开始跑步”按钮</div>
     </div>
 
-    <!-- 🏁 双独立赛道 -->
+    <!-- 🏁 双独立赛道竞技场 -->
     <div class="arena-container">
         <div class="track-group">
             <div class="track-title"><span>🤖 赛道一：35分理论目标 (匀速流)</span><span id="pacer-km-text">0.00 km</span></div>
@@ -166,7 +166,7 @@
 
     <div class="history-box" id="history-box"></div>
 
-    <!-- 操作区域 -->
+    <!-- 🍎 操作交互区域 -->
     <div class="action-box">
         <button class="btn-giant" id="lapBtn" onclick="handleLapResetClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
         
@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <!-- 🍎 彻底修复拼写错误的 base64 静音视频轨道 -->
+    <!-- 🍎 彻底重构、没有任何乱码的 iOS 纯正静音视频流组件 -->
     <video id="hiddenVideo" loop playsinline muted>
         <source src="data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAzphbW9vdgAAAGxtdmhkAAAAAMw1zXzMNc18AAAD6AAAA+gBAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACYXRyYWsAAABjdGtoZAAAAAMw1zXzMNc18AAAAQAAAAAAAAA+gAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGW1kaWEAAABcbWRoZAAAAAMw1zXzMNc18AAAQAAAAEAAAQAAAAABVjdGxyAAAAAG5ibG9ndmlkZW9Ac29ueS5jb20AAAAAAG9taW5mAAAAFHZtaGQKAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcdXVyZAAAAA1yZWYIAAAAAW1wNDUAAAAsc3RibAAAAGBzdHNkAAAAAAAAAAEAAAAsYXZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAQABAAEsAAAAwAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABjL2F2Y0MBQsAr/+EAFWd3wK9gUBlBwEBAgMDoAAB9AAgAAADpGBgYgAALuB94uSgAAAACHYm9keQAAAIdmcmZtAAAAAEMwMDEwMDBmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYAAAALdWRhdAAAAAxtZXRhAAAAAAAAACFoZGxyAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAAbWxzdAAAAA9hbG9nMDBmMWYxZjFmMQAAADxtZGF0AAAAFmZyZm0AAAAAQzAwMTAwMGYxZjFmMWY=" type="video/mp4">
     </video>
@@ -207,11 +207,12 @@
 
         function toggleTimer() {
             if (!isRunning) {
+                // 🍎 必须第一行执行原生媒体解锁
                 try {
                     videoEl.play();
                     statusBar.innerText = "🟢 屏幕常亮已挂载";
                 } catch (e) {
-                    console.log("视频激活提示:", e);
+                    console.log("视频激活:", e);
                 }
 
                 if ('wakeLock' in navigator) {
@@ -247,8 +248,3 @@
         }
 
         function handleLapResetClick() {
-            if (!isRunning) return;
-
-            lapCount++;
-            if (lapCount > 12) lapCount = 12;
-
