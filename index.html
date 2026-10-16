@@ -47,7 +47,7 @@
         .track-name {
             font-size: 11px;
             color: #8e8e93;
-            margin-bottom: 16px; /* 给上方图标留足垂直空间 */
+            margin-bottom: 18px; /* 留足小人垂直空间 */
             display: flex;
             justify-content: space-between;
         }
@@ -58,7 +58,6 @@
             background: #2c2c2e;
             border-radius: 2px;
         }
-        /* 500米中点刻度线 */
         .mid-mark {
             position: absolute;
             left: 50%;
@@ -67,7 +66,6 @@
             height: 10px;
             background: #444;
         }
-        /* 小人定位：直接居中对齐轨道线 */
         .avatar {
             position: absolute;
             top: -20px;
@@ -76,7 +74,7 @@
             z-index: 10;
         }
         .pacer-av { color: #ff9500; }
-        .user-av { color: #34c759; font-weight: bold; transition: left 0.2s cubic-bezier(0.1, 0.8, 0.3, 1); }
+        .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
 
         /* 按钮面板 */
         .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
@@ -106,37 +104,31 @@
 
     <div id="prediction-box">请点击下方“开始跑步”按钮</div>
 
-    <!-- 🏁 6公里6条跑道竞技场 -->
+    <!-- 🏁 6公里6条跑道 -->
     <div class="arena">
-        <!-- 第 1 公里 -->
-        <div class="track-row" id="track-row-0">
+        <div class="track-row">
             <div class="track-name"><span>第 1 公里</span><span>0k - 1k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-0" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-0" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-0" class="avatar pacer-av" style="left:0%; display:block;">🏎️</div><div id="user-0" class="avatar user-av" style="left:0%; display:block;">跑人</div></div>
         </div>
-        <!-- 第 2 公里 -->
-        <div class="track-row" id="track-row-1">
+        <div class="track-row">
             <div class="track-name"><span>第 2 公里</span><span>1k - 2k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-1" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-1" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-1" class="avatar pacer-av" style="left:0%; display:none;">🏎️</div><div id="user-1" class="avatar user-av" style="left:0%; display:none;">跑人</div></div>
         </div>
-        <!-- 第 3 公里 -->
-        <div class="track-row" id="track-row-2">
+        <div class="track-row">
             <div class="track-name"><span>第 3 公里</span><span>2k - 3k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-2" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-2" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-2" class="avatar pacer-av" style="left:0%; display:none;">🏎️</div><div id="user-2" class="avatar user-av" style="left:0%; display:none;">跑人</div></div>
         </div>
-        <!-- 第 4 公里 -->
-        <div class="track-row" id="track-row-3">
+        <div class="track-row">
             <div class="track-name"><span>第 4 公里</span><span>3k - 4k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-3" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-3" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-3" class="avatar pacer-av" style="left:0%; display:none;">🏎️</div><div id="user-3" class="avatar user-av" style="left:0%; display:none;">跑人</div></div>
         </div>
-        <!-- 第 5 公里 -->
-        <div class="track-row" id="track-row-4">
+        <div class="track-row">
             <div class="track-name"><span>第 5 公里</span><span>4k - 5k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-4" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-4" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-4" class="avatar pacer-av" style="left:0%; display:none;">🏎️</div><div id="user-4" class="avatar user-av" style="left:0%; display:none;">跑人</div></div>
         </div>
-        <!-- 第 6 公里 -->
-        <div class="track-row" id="track-row-5">
+        <div class="track-row">
             <div class="track-name"><span>第 6 公里 (冲刺)</span><span>5k - 6k</span></div>
-            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-5" class="avatar pacer-av" style="display:none;">🏎️</div><div id="user-5" class="avatar user-av" style="display:none;">🏃‍♂️</div></div>
+            <div class="track-rail"><div class="mid-mark"></div><div id="pacer-5" class="avatar pacer-av" style="left:0%; display:none;">🏎️</div><div id="user-5" class="avatar user-av" style="left:0%; display:none;">跑人</div></div>
         </div>
     </div>
 
@@ -152,8 +144,8 @@
     <script>
         let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false, wakeLock = null;
         let lapCount = 0, lastLapTime = 0;
-        const TARGET_SECONDS = 35 * 60; // 35分钟
-        const TIME_PER_KM = TARGET_SECONDS / 6; // 理论上每公里需要350秒
+        const TARGET_SECONDS = 35 * 60; 
+        const TIME_PER_KM = TARGET_SECONDS / 6; // 350秒每公里
 
         const timeEl = document.getElementById('total-time');
         const remainingEl = document.getElementById('remaining-time');
@@ -162,7 +154,6 @@
         const predictionBox = document.getElementById('prediction-box');
         const statusBar = document.getElementById('status-bar');
 
-        // 隐藏所有小人
         function hideAllAvatars() {
             for(let i=0; i<6; i++) {
                 document.getElementById('pacer-' + i).style.display = 'none';
@@ -170,38 +161,46 @@
             }
         }
 
-        // 刷新渲染所有小人的轨位
+        // 🌟 彻底重构、加入绝对防崩溃机制的渲染引擎
         function renderAvatars() {
             hideAllAvatars();
             let elapsedSec = elapsedTime / 1000;
 
-            // 1. 🤖 计算跑车位置 (匀速流)
+            // 1. 🏎️ 跑车匀速切轨位置计算
             let pacerTrackIdx = Math.floor(elapsedSec / TIME_PER_KM);
+            if (pacerTrackIdx < 0) pacerTrackIdx = 0;
             if (pacerTrackIdx > 5) pacerTrackIdx = 5;
             
             let pacerTrackSec = elapsedSec - (pacerTrackIdx * TIME_PER_KM);
             let pacerPct = (pacerTrackSec / TIME_PER_KM) * 100;
-            if (elapsedSec >= TARGET_SECONDS) pacerPct = 100; // 完赛锁死在终点
+            if (elapsedSec >= TARGET_SECONDS) pacerPct = 100; 
             
             let pacerNode = document.getElementById('pacer-' + pacerTrackIdx);
-            pacerNode.style.left = pacerPct + '%';
-            pacerNode.style.display = 'block';
+            if(pacerNode) {
+                pacerNode.style.left = pacerPct + '%';
+                pacerNode.style.display = 'block';
+            }
 
-            // 2. 🏃‍♂️ 计算你（跑步人）的位置 (Reset闪现流，共12个500米)
-            // 比如 lapCount=1 (0.5k) -> 第0条道50%; lapCount=2 (1.0k) -> 第0条道100%（或第1条道0%）
-            let userTrackIdx = Math.floor((lapCount - 0.1) / 2); 
-            if (userTrackIdx < 0) userTrackIdx = 0;
-            if (userTrackIdx > 5) userTrackIdx = 5;
-
+            // 2. 🏃‍♂️ 跑步人手动打卡闪现轨道位置（防开局负数卡死）
+            let userTrackIdx = 0;
             let userPct = 0;
+
             if (lapCount > 0) {
-                // 如果是奇数（如1,3,5），说明在这个公里的500米中点(50%)；如果是偶数（如2,4,6），说明在这个公里的终点(100%)
+                // 开跑后的科学计算：lapCount 1和2在第0轨，3和4在第1轨...
+                userTrackIdx = Math.floor((lapCount - 1) / 2);
+                if (userTrackIdx > 5) userTrackIdx = 5;
                 userPct = (lapCount % 2 === 1) ? 50 : 100;
+            } else {
+                // 还没按过任何键时，绝对死死锁在第 1 条轨道的起点
+                userTrackIdx = 0;
+                userPct = 0;
             }
             
             let userNode = document.getElementById('user-' + userTrackIdx);
-            userNode.style.left = userPct + '%';
-            userNode.style.display = 'block';
+            if(userNode) {
+                userNode.style.left = userPct + '%';
+                userNode.style.display = 'block';
+            }
         }
 
         function handleStartClick() {
@@ -214,10 +213,12 @@
                 timerInterval = setInterval(() => {
                     elapsedTime = Date.now() - startTime;
                     
-                    // 正计时
                     let m = Math.floor(elapsedTime / 60000).toString().padStart(2, '0');
                     let s = Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0');
                     timeEl.innerText = m + ":" + s;
                     
-                    // 倒计时
                     let remSec = Math.max(TARGET_SECONDS - Math.floor(elapsedTime / 1000), 0);
+                    let remM = Math.floor(remSec / 60).toString().padStart(2, '0');
+                    let remS = (remSec % 60).toString().padStart(2, '0');
+                    remainingEl.innerText = remM + ":" + remS;
+                    
