@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🏃‍♂️ 6公里双轨道配速跑表</title>
+    <title>🏃‍♂️ 6公里双轨道跑表</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-family: -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -15,128 +15,30 @@
             margin: 0;
             background-color: #000000;
             color: #ffffff;
-            user-select: none;
-            box-sizing: border-box;
             padding: 20px;
-        }
-        #status-bar {
-            font-size: 13px;
-            padding: 5px 14px;
-            border-radius: 20px;
-            background: #1c1c1e;
-            color: #a2a2a2;
-        }
-        .info-zone {
-            width: 100%;
-            text-align: center;
-            padding: 10px 0;
-        }
-        .label { font-size: 14px; color: #8e8e93; letter-spacing: 1px; margin-bottom: 2px; }
-        #total-time {
-            font-size: 72px;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            line-height: 1.1;
-        }
-        #prediction-box {
-            font-size: 17px;
-            color: #ffffff; 
-            min-height: 48px;
-            margin: 10px 0;
-            line-height: 1.4;
-        }
-        .predict-highlight { color: #34c759; font-weight: bold; }
-
-        /* 双赛道 */
-        .arena-container {
-            width: 100%;
-            background: #1c1c1e;
-            padding: 20px 15px;
-            border-radius: 16px;
             box-sizing: border-box;
-            border: 1px solid #2c2c2e;
-            margin: 5px 0;
         }
-        .track-group {
-            margin: 10px 0 20px 0;
-            position: relative;
-        }
-        .track-title {
-            font-size: 12px;
-            color: #8e8e93;
-            margin-bottom: 22px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .track-rail {
-            position: relative;
-            width: 100%;
-            height: 6px;
-            background: #2c2c2e;
-            border-radius: 3px;
-        }
-        .pacer-avatar, .user-avatar {
-            position: absolute;
-            top: -24px;
-            font-size: 22px;
-            transform: translateX(-50%);
-        }
-        .pacer-avatar { color: #ff9500; }
-        .user-avatar { 
-            color: #34c759; 
-            font-weight: bold; 
-            transition: left 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        .endpoints {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #444;
-            margin-top: 4px;
-        }
-
-        .history-box {
-            width: 100%;
-            max-height: 12vh;
-            overflow-y: auto;
-            border-top: 1px solid #1c1c1e;
-            padding-top: 5px;
-        }
-        .record-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 15px;
-            font-size: 13px;
-            color: #aeaeb2;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* 底部控制面板 */
-        .action-box {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .btn-giant {
-            width: 100%;
-            padding: 24px 0;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            border-radius: 16px;
-            color: white;
-            background-color: #34c759;
-            box-shadow: 0 4px 15px rgba(52,199,89,0.3);
-            text-align: center;
-        }
-        .btn-giant:active { transform: scale(0.98); }
+        #status-bar { font-size: 13px; padding: 5px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; }
+        .time-box { text-align: center; }
+        #total-time { font-size: 75px; font-weight: bold; font-variant-numeric: tabular-nums; }
+        #prediction-box { font-size: 18px; color: #34c759; margin: 15px 0; min-height: 40px; text-align: center; }
         
-        .control-bar { width: 100%; display: flex; gap: 15px; }
-        .btn-small { flex: 1; padding: 14px 0; font-size: 16px; font-weight: bold; border: none; border-radius: 12px; color: white; }
-        .btn-start { background-color: #1c1c1e; color: #34c759; border: 1px solid #34c759; }
-        .btn-reset { background-color: #1c1c1e; color: #8e8e93; }
-        
+        /* 赛道区域 */
+        .arena { width: 100%; background: #1c1c1e; padding: 15px; border-radius: 12px; box-sizing: border-box; }
+        .track { position: relative; margin: 25px 0; height: 6px; background: #2c2c2e; border-radius: 3px; }
+        .track-title { font-size: 12px; color: #8e8e93; display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .avatar { position: absolute; top: -22px; font-size: 20px; transform: translateX(-50%); }
+        #user-runner { transition: left 0.2s ease; }
+        .scale { display: flex; justify-content: space-between; font-size: 10px; color: #444; margin-top: 5px; }
+
+        /* 按钮面板 */
+        .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .btn { width: 100%; border: none; border-radius: 12px; font-weight: bold; color: white; cursor: pointer; }
+        .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; }
+        .btn-hit:active { opacity: 0.8; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-side { padding: 14px 0; font-size: 16px; background-color: #2c2c2e; }
+        #startBtn { color: #34c759; border: 1px solid #34c759; }
         video { position: absolute; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; }
     </style>
 </head>
@@ -144,111 +46,105 @@
 
     <div id="status-bar">⏳ 待机中</div>
 
-    <div class="info-zone">
-        <div class="label">当前已跑步时间</div>
+    <div class="time-box">
+        <div style="font-size:14px;color:#8e8e93">已跑步时间</div>
         <div id="total-time">00:00</div>
-        <div id="prediction-box">请点击下方“开始跑步”按钮</div>
+        <div id="prediction-box">点击下方“开始跑步”按钮启动</div>
     </div>
 
-    <!-- 🏁 双独立赛道 -->
-    <div class="arena-container">
-        <div class="track-group">
-            <div class="track-title"><span>🤖 赛道一：35分理论目标 (匀速流)</span><span id="pacer-km-text">0.00 km</span></div>
-            <div class="track-rail"><div id="pacer" class="pacer-avatar" style="left: 0%;">🤖</div></div>
-            <div class="endpoints"><span>0k</span><span>6k</span></div>
+    <!-- 跑道 -->
+    <div class="arena">
+        <div class="track">
+            <div class="track-title"><span>🤖 赛道一：35分目标 (匀速流)</span><span id="pacer-km">0.00 km</span></div>
+            <div id="pacer" class="avatar" style="left: 0%;">🤖</div>
+            <div class="scale"><span>0k</span><span>6k</span></div>
         </div>
-        <div class="track-group">
-            <div class="track-title"><span>🏃‍♂️ 赛道二：实际进度 (手动Reset)</span><span id="user-km-text">0.0 km</span></div>
-            <div class="track-rail"><div id="user-runner" class="user-avatar" style="left: 0%;">🏃‍♂️</div></div>
-            <div class="endpoints"><span>0k</span><span>6k</span></div>
-        </div>
-    </div>
-
-    <div class="history-box" id="history-box"></div>
-
-    <!-- 交互区域 -->
-    <div class="action-box">
-        <button class="btn-giant" id="lapBtn" onclick="handleLapResetClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
-        
-        <div class="control-bar">
-            <button class="btn-small btn-reset" onclick="resetTimer()">清零</button>
-            <button class="btn-small btn-start" id="startBtn" onclick="toggleTimer()">开始跑步</button>
+        <div class="track">
+            <div class="track-title"><span>🏃‍♂️ 赛道二：你的实际进度 (手动Reset)</span><span id="user-km">0.0 km</span></div>
+            <div id="user-runner" class="avatar" style="left: 0%;">🏃‍♂️</div>
+            <div class="scale"><span>0k</span><span>6k</span></div>
         </div>
     </div>
 
-    <!-- 🍎 彻底纯净无损坏的静态媒体组件 -->
+    <!-- 按钮组件 -->
+    <div class="controls">
+        <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
+        <div class="btn-group">
+            <button class="btn btn-side" onclick="handleResetClick()">清零</button>
+            <button class="btn btn-side" id="startBtn" onclick="handleStartClick()">开始跑步</button>
+        </div>
+    </div>
+
+    <!-- 强行不锁屏所必需的静音视频轨道 -->
     <video id="hiddenVideo" loop playsinline muted>
         <source src="data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAzphbW9vdgAAAGxtdmhkAAAAAMw1zXzMNc18AAAD6AAAA+gBAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACYXRyYWsAAABjdGtoZAAAAAMw1zXzMNc18AAAAQAAAAAAAAA+gAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGW1kaWEAAABcbWRoZAAAAAMw1zXzMNc18AAAQAAAAEAAAQAAAAABVjdGxyAAAAAG5ibG9ndmlkZW9Ac29ueS5jb20AAAAAAG9taW5mAAAAFHZtaGQKAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcdXVyZAAAAA1yZWYIAAAAAW1wNDUAAAAsc3RibAAAAGBzdHNkAAAAAAAAAAEAAAAsYXZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAQABAAEsAAAAwAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABjL2F2Y0MBQsAr/+EAFWd3wK9gUBlBwEBAgMDoAAB9AAgAAADpGBgYgAALuB94uSgAAAACHYm9keQAAAIdmcmZtAAAAAEMwMDEwMDBmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYxZjFmMWYAAAALdWRhdAAAAAxtZXRhAAAAAAAAACFoZGxyAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAAbWxzdAAAAA9hbG9nMDBmMWYxZjFmMQAAADxtZGF0AAAAFmZyZm0AAAAAQzAwMTAwMGYxZjFmMWY=" type="video/mp4">
     </video>
 
     <script>
-        let startTime = 0;
-        let elapsedTime = 0;
-        let timerInterval = null;
-        let isRunning = false;
-        let wakeLock = null;
-        
-        let lapCount = 0; 
-        let lastLapTime = 0;
-        const TARGET_TOTAL_SECONDS = 35 * 60; 
+        let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
+        let lapCount = 0, lastLapTime = 0;
+        const TARGET_SECONDS = 35 * 60;
 
         const timeEl = document.getElementById('total-time');
         const startBtn = document.getElementById('startBtn');
         const lapBtn = document.getElementById('lapBtn');
         const predictionBox = document.getElementById('prediction-box');
-        const historyBox = document.getElementById('history-box');
         const statusBar = document.getElementById('status-bar');
         const videoEl = document.getElementById('hiddenVideo');
-        
         const pacerEl = document.getElementById('pacer');
-        const pacerKmText = document.getElementById('pacer-km-text');
-        const userRunnerEl = document.getElementById('user-runner');
-        const userKmText = document.getElementById('user-km-text');
+        const pacerKm = document.getElementById('pacer-km');
+        const userEl = document.getElementById('user-runner');
+        const userKm = document.getElementById('user-km');
 
-        function toggleTimer() {
+        function handleStartClick() {
             if (!isRunning) {
-                try {
-                    videoEl.play();
-                    statusBar.innerText = "🟢 屏幕常亮已挂载";
-                } catch (e) {
-                    console.log(e);
-                }
-
-                if ('wakeLock' in navigator) {
-                    navigator.wakeLock.request('screen').then(lock => { wakeLock = lock; }).catch(e => {});
-                }
+                // 解锁系统防熄屏
+                try { videoEl.play(); statusBar.innerText = "🟢 屏幕常亮中"; } catch(e){}
+                if ('wakeLock' in navigator) { navigator.wakeLock.request('screen').catch(e=>{}); }
 
                 startTime = Date.now() - elapsedTime;
                 timerInterval = setInterval(() => {
                     elapsedTime = Date.now() - startTime;
                     
+                    // 刷新时钟
                     let m = Math.floor(elapsedTime / 60000).toString().padStart(2, '0');
                     let s = Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0');
                     timeEl.innerText = `${m}:${s}`;
                     
-                    let elapsedSeconds = elapsedTime / 1000;
-                    let pacerPercent = Math.min((elapsedSeconds / TARGET_TOTAL_SECONDS) * 100, 100);
-                    pacerEl.style.left = `${pacerPercent}%`;
-                    
-                    let pacerKm = ((elapsedSeconds / TARGET_TOTAL_SECONDS) * 6).toFixed(2);
-                    pacerKmText.innerText = `${Math.min(pacerKm, 6.00)} km`;
+                    // 轨道一机器人挪动
+                    let seconds = elapsedTime / 1000;
+                    let pct = Math.min((seconds / TARGET_SECONDS) * 100, 100);
+                    pacerEl.style.left = pct + '%';
+                    pacerKm.innerText = Math.min(((seconds / TARGET_SECONDS) * 6), 6).toFixed(2) + ' km';
                 }, 200);
 
                 isRunning = true;
                 startBtn.innerText = "暂停";
-                lapBtn.style.display = "block"; 
-                if(lapCount === 0) predictionBox.innerHTML = "冲！每到跑步机500米整点，狂按上方绿色大键记录";
+                lapBtn.style.display = "block";
+                if(lapCount === 0) predictionBox.innerText = "每到跑步机500米，点击绿色大键记录";
             } else {
                 clearInterval(timerInterval);
-                try { videoEl.pause(); } catch(e) {}
+                try { videoEl.pause(); } catch(e){}
                 isRunning = false;
                 startBtn.innerText = "恢复";
             }
         }
 
-        function handleLapResetClick() {
+        function handleLapClick() {
             if (!isRunning) return;
-
             lapCount++;
             if (lapCount > 12) lapCount = 12;
 
+            lastLapTime = elapsedTime;
+            let km = (lapCount * 0.5).toFixed(1);
+
+            // 轨道二闪现推进
+            userEl.style.left = ((lapCount / 12) * 100) + '%';
+            userKm.innerText = km + ' km';
+
+            // 预测均速
+            if (lapCount >= 12) {
+                predictionBox.innerText = "🎉 6公里完成！";
+            } else {
+                let avg = elapsedTime / lapCount;
+                let finalMs = elapsedTime + (avg * (12 - lapCount));
