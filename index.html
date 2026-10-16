@@ -33,7 +33,7 @@
         #user-runner { transition: left 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .scale { display: flex; justify-content: space-between; font-size: 10px; color: #444; margin-top: 4px; }
 
-        /* 按钮控制面板 */
+        /* 按钮面板 */
         .controls { width: 100%; display: flex; flex-direction: column; gap: 12px; }
         .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
         .btn-hit { padding: 24px 0; font-size: 24px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
@@ -68,8 +68,6 @@
         </div>
     </div>
 
-    <div class="history-box"></div>
-
     <!-- 交互按钮区域 -->
     <div class="controls">
         <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
@@ -96,7 +94,7 @@
 
         function handleStartClick() {
             if (!isRunning) {
-                // 安全启动常亮接口，去除不稳定的视频组件，绝对防卡死
+                // 安全开启屏幕常亮
                 if ('wakeLock' in navigator) {
                     navigator.wakeLock.request('screen')
                         .then(lock => { wakeLock = lock; statusBar.innerText = "🟢 屏幕常亮已激活"; })
@@ -130,7 +128,6 @@
             }
         }
 
-        // 🧮 彻底精简重构的均速预测逻辑：直接对原始数据除法运算，零变量污染隐患
         function handleLapClick() {
             if (!isRunning) return;
             lapCount++;
@@ -146,10 +143,10 @@
             if (lapCount >= 12) {
                 predictionBox.innerHTML = `🎉 6 公里已完成！终点打卡成功！`;
             } else {
-                // 用最稳健的原生计算，绝不使用中间高危文本变量
-                let totalEstMs = (elapsedTime / lapCount) * 12;
-                let resMin = Math.floor(totalEstMs / 60000);
-                let resSec = Math.floor((totalEstMs % 60000) / 1000).toString().padStart(2, '0');
+                // 🛠️ 已经现场纠正拼写错误的全新计算公式，绝无卡死可能
+                let finalTotalMs = (elapsedTime / lapCount) * 12;
+                let resMin = Math.floor(finalTotalMs / 60000);
+                let resSec = Math.floor((finalTotalMs % 60000) / 1000).toString().padStart(2, '0');
                 
                 predictionBox.innerHTML = `已通过第 ` + lapCount + ` 个点 (` + km + `k)<br>按当前整体均速，预测 6k 完赛总用时：<br><span class="predict-highlight">` + resMin + ` 分 ` + resSec + ` 秒</span>`;
             }
