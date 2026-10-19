@@ -13,6 +13,7 @@
  .time-num { font-size: 42px; font-weight: bold; font-variant-numeric: tabular-nums; }
  #prediction-box { font-size: 15px; color: #ffffff; min-height: 40px; margin: 5px 0; line-height: 1.4; text-align: center; }
  .predict-highlight { color: #34c759; font-weight: bold; }
+ /* 🏁 6公里6条跑道大容器 */
  .arena { width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding: 10px 0; }
  .track-row { width: 100%; display: flex; flex-direction: column; position: relative; }
  .track-name { font-size: 11px; color: #8e8e93; margin-bottom: 18px; display: flex; justify-content: space-between; }
@@ -21,6 +22,7 @@
  .avatar { position: absolute; top: -20px; font-size: 20px; z-index: 10; transform: scaleX(-1) translateX(50%); }
  .pacer-av { color: #ff9500; }
  .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
+ /* 按钮面板 */
  .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
  .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
  .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
@@ -87,6 +89,10 @@
  const TARGET_SECONDS = 35 * 60; 
  const TIME_PER_KM = TARGET_SECONDS / TOTAL_KM; 
  
+ // 🌟 核心加装：死锁级定格缓存变量，防止中间任何时间轴篡改数据 🌟
+ let savedPredictedSeconds = 0;
+ let savedAvgSpeedText = "";
+
  const timeEl = document.getElementById('total-time');
  const remainingEl = document.getElementById('remaining-time');
  const startBtn = document.getElementById('startBtn');
@@ -137,17 +143,11 @@
  return m + ":" + s;
  }
 
- // 🌟 100% 严格纠正后的公式实现函数 🌟
+ // 🌟 物理公式严格重塑函数（只有在满1公里单向触发） 🌟
  function triggerLapCalculation() {
- if (lapCount === 0) {
- predictionBox.innerText = "已开跑！通过500米或1公里时点击打卡";
- remainingEl.innerText = "--:--";
- return;
- }
-
- // A. 目前跑的时间（转化为小时，方便计算公里/小时）
+ // 目前跑的时间（小时）
  let currentHours = (elapsedTime / 1000) / 3600; 
- // B. 目前跑的距离（公里）
+ // 目前跑的距离（公里）
  let currentDistance = lapCount * 0.5; 
  
  // 1. 【公式第一步】目前跑的平均速度 = 目前跑的距离 / 目前跑的时间 (单位: 公里/小时)
@@ -156,23 +156,21 @@
  // 2. 【公式第二步】完成6公里剩下的距离
  let remainingDistance = TOTAL_KM - currentDistance;
  
- // 3. 【公式第三步】完成6公里剩下的距离 除以 目前跑的平均速度 (得到剩下的时间，单位: 小时)
+ // 3. 【公式第三步】完成6公里剩下的距离 除以 目前跑的平均速度 (单位: 小时)
  let remainingTimeHours = remainingDistance / currentAvgSpeed;
  
  // 4. 【公式第四步】预计总用时(小时) = 剩下的时间 + 目前跑的时间
  let predictedTotalHours = remainingTimeHours + currentHours;
  
- // 5. 将计算出的总用时从小时转换回秒，用来漂亮地显示在屏幕上
- let predictedTotalSeconds = predictedTotalHours * 3600;
+ // 将小时换回秒，死死锁进全局缓存中，不点下一次绝不动弹
+ savedPredictedSeconds = predictedTotalHours * 3600;
 
- // 为了给跑友更直观的速度感，把“公里/小时”也同时转换成操场上更常用的“配速(分'秒'')/每公里”展示在下方
+ // 计算分段标准配速
  let secondsPerKm = (elapsedTime / 1000) / currentDistance;
  let paceM = Math.floor(secondsPerKm / 60);
  let paceS = Math.floor(secondsPerKm % 60).toString().padStart(2, '0');
 
- // 刷新UI
- remainingEl.innerText = formatTimeDisplay(predictedTotalSeconds);
- predictionBox.innerHTML = "目前平均速度: <span class='predict-highlight'>" + currentAvgSpeed.toFixed(2) + " km/h</span> (" + paceM + "'" + paceS + "''/km)";
+ savedAvgSpeedText = "目前平均速度: <span class='predict-highlight'>" + currentAvgSpeed.toFixed(2) + " km/h</span> (" + paceM + "'" + paceS + "''/km)";
  }
 
  function handleStartClick() {
@@ -185,9 +183,19 @@
  startTime = Date.now() - elapsedTime;
  timerInterval = setInterval(() => {
  elapsedTime = Date.now() - startTime;
+ 
  let totalSec = Math.floor(elapsedTime / 1000);
- timeEl.innerText = formatTimeDisplay(totalSec);
+ timeEl.innerText = formatTimeDisplay(totalSec); 
  renderAvatars();
+
+ // 🌟 计时循环期间，只负责读取定格好的缓存，确保在第3个500米期间数据绝不发生由于时间增加导致的任何缩短乱跳！ 🌟
+ if (savedPredictedSeconds > 0) {
+ remainingEl.innerText = formatTimeDisplay(savedPredictedSeconds);
+ predictionBox.innerHTML = savedAvgSpeedText;
+ } else {
+ predictionBox.innerText = "已开跑！满1公里(打卡2次)后将激活精准公式预测";
+ remainingEl.innerText = "--:--";
+ }
  }, 250); 
  } else {
  isRunning = false;
@@ -205,7 +213,7 @@
  lapCount++;
  renderAvatars();
  
- // 🌟 1000米计算一次：每当打卡次数是双数（0.5k*2=1k, 0.5k*4=2k...）时才执行计算
+ // 🌟 1000米计算入口：只有满 1公里（第2次点击）、2公里（第4次点击）时，才重新抓取数据死锁计算一次 🌟
  if (lapCount % 2 === 0) {
  triggerLapCalculation();
  }
@@ -233,15 +241,9 @@
  }
  elapsedTime = 0;
  lapCount = 0;
+ savedPredictedSeconds = 0;
+ savedAvgSpeedText = "";
  timeEl.innerText = "00:00";
  remainingEl.innerText = "--:--";
  predictionBox.innerText = "请点击下方“开始跑步”按钮";
  statusBar.innerText = "⏳ 待机中";
- startBtn.innerText = "开始跑步";
- startBtn.style.display = "block";
- lapBtn.style.display = "none";
- renderAvatars();
- }
- </script>
-</body>
-</html>
