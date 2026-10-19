@@ -127,11 +127,11 @@
       margin: 6px 0 2px 0;
     }
 
-    /* 运动员与蓝色赛车图标在赛道上的定位 */
+    /* 核心修改：通过 scaleX(-1) 将图标水平翻转，让它们正面朝右向前奔跑/行驶 */
     .racer-icon {
       position: absolute;
       top: -12px;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scaleX(-1);
       font-size: 18px;
       transition: left 0.4s ease;
       z-index: 3;
@@ -245,22 +245,21 @@
     { name: "第 6 公里 (冲刺)", start: 5, end: 6 }
   ];
 
-  // 渲染赛道：把“运动员”和“蓝色赛车”精准投射到对应的公里条中
   function renderTracks() {
     const listEl = document.getElementById('trackList');
     listEl.innerHTML = '';
     
-    // 35分钟跑完6公里 = 2100秒，每秒移动距离 = 6 / 2100 km/s
+    // 35分钟跑完6公里 = 2100秒
     const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
     const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
 
     tracks.forEach((track) => {
-      // 1. 计算运动员（你）在这个分段赛道中的百分比位置 (0% ~ 100%)
       let runnerPct = 0;
       let showRunner = false;
+      
       if (currentKm >= track.end) {
         runnerPct = 100;
-        showRunner = true; // 跑过去了也显示在终点
+        showRunner = true;
       } else if (currentKm > track.start && currentKm < track.end) {
         runnerPct = ((currentKm - track.start) / (track.end - track.start)) * 100;
         showRunner = true;
@@ -269,9 +268,9 @@
         showRunner = true;
       }
 
-      // 2. 计算蓝色赛车在这个分段赛道中的百分比位置 (0% ~ 100%)
       let carPct = 0;
       let showCar = false;
+      
       if (carDistance >= track.end) {
         carPct = 100;
         showCar = true;
@@ -299,7 +298,6 @@
     });
   }
 
-  // 屏幕常亮 Wake Lock
   async function requestWakeLock() {
     try {
       if ('wakeLock' in navigator) {
@@ -323,7 +321,6 @@
     }
   });
 
-  // 主计时器：驱动已跑时间、蓝色赛车位移
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
@@ -335,7 +332,6 @@
     }, 1000);
   }
 
-  // 每次手动点击打卡
   function handlePunch() {
     if (navigator.vibrate) navigator.vibrate(50);
 
@@ -369,7 +365,6 @@
     document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
   }
 
-  // 触发计算：速度、配速、以及按你要求的公式计算预计总用时
   function triggerCalculation() {
     updateTimerDisplayOnly();
 
