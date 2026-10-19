@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
  <title>跑表 | 6公里直道竞技场</title>
  <style>
- body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; background-color: #000000; color: #ffffff; padding: 15px 20px; box-sizing: border-box; user-select: none; }
+ body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; background-color: #000000; color: #ffffff; padding: 15px 20px; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
  #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; }
  .time-panel { width: 100%; display: flex; justify-content: space-around; text-align: center; }
  .time-box { flex: 1; }
@@ -24,7 +24,21 @@
  .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
  /* 按钮面板 */
  .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
- .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
+ 
+ /* 🌟 核心适配 iPhone：强行解除 iOS 的点击吞噬手势 🌟 */
+ .btn { 
+    width: 100%; 
+    border: none; 
+    border-radius: 16px; 
+    font-weight: bold; 
+    color: white; 
+    cursor: pointer; 
+    text-align: center; 
+    -webkit-user-select: auto !important; 
+    user-select: auto !important; 
+    touch-action: manipulation; 
+    -webkit-tap-highlight-color: rgba(0,0,0,0); 
+ }
  .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
  .btn-hit:active { transform: scale(0.98); }
  .btn-group { display: flex; gap: 15px; }
@@ -89,7 +103,6 @@
  const TARGET_SECONDS = 35 * 60; 
  const TIME_PER_KM = TARGET_SECONDS / TOTAL_KM; 
  
- // 🌟 核心加装：死锁级定格缓存变量，防止中间任何时间轴篡改数据 🌟
  let savedPredictedSeconds = 0;
  let savedAvgSpeedText = "";
 
@@ -143,29 +156,17 @@
  return m + ":" + s;
  }
 
- // 🌟 物理公式严格重塑函数（只有在满1公里单向触发） 🌟
  function triggerLapCalculation() {
- // 目前跑的时间（小时）
  let currentHours = (elapsedTime / 1000) / 3600; 
- // 目前跑的距离（公里）
  let currentDistance = lapCount * 0.5; 
  
- // 1. 【公式第一步】目前跑的平均速度 = 目前跑的距离 / 目前跑的时间 (单位: 公里/小时)
  let currentAvgSpeed = currentDistance / currentHours;
- 
- // 2. 【公式第二步】完成6公里剩下的距离
  let remainingDistance = TOTAL_KM - currentDistance;
- 
- // 3. 【公式第三步】完成6公里剩下的距离 除以 目前跑的平均速度 (单位: 小时)
  let remainingTimeHours = remainingDistance / currentAvgSpeed;
- 
- // 4. 【公式第四步】预计总用时(小时) = 剩下的时间 + 目前跑的时间
  let predictedTotalHours = remainingTimeHours + currentHours;
  
- // 将小时换回秒，死死锁进全局缓存中，不点下一次绝不动弹
  savedPredictedSeconds = predictedTotalHours * 3600;
 
- // 计算分段标准配速
  let secondsPerKm = (elapsedTime / 1000) / currentDistance;
  let paceM = Math.floor(secondsPerKm / 60);
  let paceS = Math.floor(secondsPerKm % 60).toString().padStart(2, '0');
@@ -188,7 +189,6 @@
  timeEl.innerText = formatTimeDisplay(totalSec); 
  renderAvatars();
 
- // 🌟 计时循环期间，只负责读取定格好的缓存，确保在第3个500米期间数据绝不发生由于时间增加导致的任何缩短乱跳！ 🌟
  if (savedPredictedSeconds > 0) {
  remainingEl.innerText = formatTimeDisplay(savedPredictedSeconds);
  predictionBox.innerHTML = savedAvgSpeedText;
@@ -213,7 +213,6 @@
  lapCount++;
  renderAvatars();
  
- // 🌟 1000米计算入口：只有满 1公里（第2次点击）、2公里（第4次点击）时，才重新抓取数据死锁计算一次 🌟
  if (lapCount % 2 === 0) {
  triggerLapCalculation();
  }
@@ -247,3 +246,11 @@
  remainingEl.innerText = "--:--";
  predictionBox.innerText = "请点击下方“开始跑步”按钮";
  statusBar.innerText = "⏳ 待机中";
+ startBtn.innerText = "开始跑步";
+ startBtn.style.display = "block";
+ lapBtn.style.display = "none";
+ renderAvatars();
+ }
+ </script>
+</body>
+</html>
