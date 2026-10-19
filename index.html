@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>挑战永不停止</title>
+  <title>挑战永不停歇</title>
   <style>
     :root {
       --bg-color: #08080c;
@@ -64,14 +64,12 @@
       transform: scale(0.97);
     }
 
-    /* 开始跑步按钮 (初始在上方) */
     .btn-start {
       background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
       color: #fff;
       box-shadow: 0 8px 25px var(--accent-blue-glow);
     }
 
-    /* 到了打卡按钮 (开始后常驻上方方便狂按) */
     .btn-punch {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: #000;
@@ -128,7 +126,7 @@
       text-align: center;
       font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 14px;
+      margin-bottom: 24px;
     }
 
     .speed-info span {
@@ -137,58 +135,19 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 上方的单公里分段成绩看板 */
-    .laps-board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 12px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 8px;
-    }
-
-    .lap-card {
-      background: #121219;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 6px 4px;
-      text-align: center;
-    }
-
-    .lap-card-title {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-    }
-
-    .lap-card-time {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-blue);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .lap-card.empty .lap-card-time {
-      color: #4b5563;
-      font-weight: 400;
-      font-size: 12px;
-    }
-
     /* 中间赛道展示区 */
     .track-list {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 12px;
     }
 
     .track-item {
       background: var(--card-bg);
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 14px;
       border: 1px solid var(--border-color);
       position: relative;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -208,12 +167,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .track-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .track-title {
       font-weight: 600;
+      font-size: 14px;
       color: #e5e7eb;
     }
 
@@ -230,6 +195,25 @@
       background: rgba(255, 255, 255, 0.05);
       padding: 2px 6px;
       border-radius: 4px;
+    }
+
+    /* 赛道内联单公里成绩 */
+    .track-lap-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      font-variant-numeric: tabular-nums;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .track-lap-time.empty {
+      color: #4b5563;
+      background: transparent;
+      font-weight: 400;
+      font-size: 12px;
+      padding: 0;
     }
 
     .track-bar-container {
@@ -268,7 +252,7 @@
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    /* 底部辅助按钮区（暂停、清零） */
+    /* 底部辅助按钮区 */
     .control-area {
       display: flex;
       gap: 12px;
@@ -322,12 +306,9 @@
     <div class="speed-info">
       平均速度: <span id="speedDisplay">0.00 km/h</span> &nbsp;|&nbsp; 配速: <span id="paceDisplay">--'--"/km</span>
     </div>
-
-    <!-- 上方单公里分段看板 -->
-    <div class="laps-board" id="lapsBoard"></div>
   </header>
 
-  <!-- 中间赛道竞技场 -->
+  <!-- 中间赛道竞技场 (内含分段成绩) -->
   <div class="track-list" id="trackList"></div>
 
   <!-- 底部辅助控制区 -->
@@ -359,32 +340,6 @@
     { id: 6, name: "第 6 公里 (冲刺)", start: 5, end: 6 }
   ];
 
-  function renderLapsBoard() {
-    const boardEl = document.getElementById('lapsBoard');
-    boardEl.innerHTML = '';
-    
-    for (let i = 1; i <= 6; i++) {
-      const lSec = lapTimes[i];
-      let timeText = '--:--';
-      let isEmpty = 'empty';
-      
-      if (lSec !== null) {
-        const lMin = Math.floor(lSec / 60);
-        const lS = Math.floor(lSec % 60).toString().padStart(2, '0');
-        timeText = `${lMin}'${lS}"`;
-        isEmpty = '';
-      }
-
-      const card = document.createElement('div');
-      card.className = `lap-card ${isEmpty}`;
-      card.innerHTML = `
-        <div class="lap-card-title">${i}k 独立用时</div>
-        <div class="lap-card-time">${timeText}</div>
-      `;
-      boardEl.appendChild(card);
-    }
-  }
-
   function renderTracks() {
     const listEl = document.getElementById('trackList');
     listEl.innerHTML = '';
@@ -394,6 +349,15 @@
 
     tracks.forEach((track) => {
       const statusClass = (currentKm >= track.end || currentKm > track.start) ? 'completed' : 'pending';
+
+      // 提取该公里的用时
+      const lSec = lapTimes[track.id];
+      let lapHtml = `<span class="track-lap-time empty">--'--"</span>`;
+      if (lSec !== null) {
+        const lMin = Math.floor(lSec / 60);
+        const lS = Math.floor(lSec % 60).toString().padStart(2, '0');
+        lapHtml = `<span class="track-lap-time">⏱️ ${lMin}'${lS}"</span>`;
+      }
 
       let runnerPct = 0;
       let showRunner = false;
@@ -427,8 +391,11 @@
       div.className = `track-item ${statusClass}`;
       div.innerHTML = `
         <div class="track-info-row">
-          <span class="track-title">${track.name}</span>
-          <span class="track-range">${track.start}k - ${track.end}k</span>
+          <div class="track-title-group">
+            <span class="track-title">${track.name}</span>
+            <span class="track-range">${track.start}k - ${track.end}k</span>
+          </div>
+          ${lapHtml}
         </div>
         <div class="track-bar-container">
           <div class="track-progress-fill" style="width: ${runnerPct}%"></div>
@@ -438,8 +405,6 @@
       `;
       listEl.appendChild(div);
     });
-
-    renderLapsBoard();
   }
 
   async function requestWakeLock() {
