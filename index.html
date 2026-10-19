@@ -2,11 +2,31 @@
 <html lang="zh-CN">
 <head>
  <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
  <title>跑表 | 6公里直道竞技场</title>
+ 
+ <!-- 苹果iOS完全全屏App化配置 -->
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <meta name="apple-mobile-web-app-title" content="竞技跑表">
+
  <style>
- body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; background-color: #000000; color: #ffffff; padding: 15px 20px; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
- #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; transition: all 0.3s ease; }
+ body { 
+    font-family: -apple-system, sans-serif; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: space-between; 
+    height: 100vh; 
+    margin: 0; 
+    background-color: #000000; 
+    color: #ffffff; 
+    padding: calc(20px + window.safe-area-inset-top) 20px 20px 20px; 
+    box-sizing: border-box; 
+    -webkit-user-select: none; 
+    user-select: none; 
+ }
+ #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; transition: all 0.3s ease; margin-top: 10px; }
  .time-panel { width: 100%; display: flex; justify-content: space-around; text-align: center; }
  .time-box { flex: 1; }
  .label { font-size: 13px; color: #8e8e93; letter-spacing: 1px; margin-bottom: 2px; }
@@ -86,15 +106,18 @@
  </div>
  
  <div class="controls">
- <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
- <div class="btn-group">
- <button class="btn btn-side" id="resetBtn" onclick="handleResetClick()">清零</button>
- <button class="btn btn-side" id="startBtn" onclick="handleStartClick()">开始跑步</button>
- </div>
+  <!-- 🌟 常亮確保用の隠しビデオ要素（全画面アプリでも画面を絶対に消さない裏技） -->
+  <video id="noSleepVideo" loop playsinline muted src="data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAzphbW92bWFhdGgAAAAXbXZoZAAAAADRx66e0ceuLgAAeWgAAnfQAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAACVdHJhawAAXHRkaGQAAAAA0ceuntHHri4AAAABAAAAAnfQAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAABmdWR0YQAAAFhtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZHRhAAAAAAAAAAAAAAAAAAAAAAtkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAxtdXJsAAAAAAAAAFRpbG9mAAAAKHRSdWstdmFsdWUAAAAha2V5cwAAAAAAAAABAAAAE21kYXRhAAAAAAAAAAAAAAAB" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></video>
+  
+  <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
+  <div class="btn-group">
+   <button class="btn btn-side" id="resetBtn" onclick="handleResetClick()">清零</button>
+   <button class="btn btn-side" id="startBtn" onclick="handleStartClick()">开始跑步</button>
+  </div>
  </div>
 
  <script>
- let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false, wakeLock = null;
+ let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
  let lapCount = 0;
  const TOTAL_KM = 6;
  const TARGET_SECONDS = 35 * 60; 
@@ -109,6 +132,7 @@
  const lapBtn = document.getElementById('lapBtn');
  const predictionBox = document.getElementById('prediction-box');
  const statusBar = document.getElementById('status-bar');
+ const videoEl = document.getElementById('noSleepVideo');
 
  function hideAllAvatars() {
  for(let i=0; i<6; i++) {
@@ -171,17 +195,20 @@
  savedAvgSpeedText = "目前平均速度: <span class='predict-highlight'>" + currentAvgSpeed.toFixed(2) + " km/h</span> (" + paceM + "'" + paceS + "''/km)";
  }
 
- // 🌟 重新加装的、带有高级隔离保护的常亮锁请求函数 🌟
- async function requestWakeLock() {
-    if ('wakeLock' in navigator) {
-        try {
-            wakeLock = await navigator.wakeLock.request('screen');
-            statusBar.innerText = "🟢 屏幕常亮已激活";
-        } catch (err) {
+ // 🌟 全画面アプリ対応：1pxの無音ビデオをバックグラウンド再生させてiOSのスリープをだます裏技 🌟
+ function enableNoSleep() {
+    if (videoEl) {
+        videoEl.play().then(() => {
+            statusBar.innerText = "🟢 全屏常亮已激活";
+        }).catch(() => {
             statusBar.innerText = "⏳ 计时中";
-        }
-    } else {
-        statusBar.innerText = "⏳ 计时中";
+        });
+    }
+ }
+
+ function disableNoSleep() {
+    if (videoEl) {
+        videoEl.pause();
     }
  }
 
@@ -191,60 +218,11 @@
  startBtn.innerText = "暂停跑步";
  lapBtn.style.display = "block";
  
- // 🌟 激活常亮：只要网页在最前面，iPhone就永远不锁屏 🌟
- requestWakeLock();
+ // 安全にスリープ防止を発動
+ enableNoSleep();
  
  startTime = Date.now() - elapsedTime;
  timerInterval = setInterval(() => {
  elapsedTime = Date.now() - startTime;
  
  let totalSec = Math.floor(elapsedTime / 1000);
- timeEl.innerText = formatTimeDisplay(totalSec); 
- renderAvatars();
-
- if (savedPredictedSeconds > 0) {
- remainingEl.innerText = formatTimeDisplay(savedPredictedSeconds);
- predictionBox.innerHTML = savedAvgSpeedText;
- } else {
- predictionBox.innerText = "已开跑！满1公里(打卡2次)后将激活精准公式预测";
- remainingEl.innerText = "--:--";
- }
- }, 250); 
- } else {
- isRunning = false;
- startBtn.innerText = "继续跑步";
- statusBar.innerText = "⏸️ 已暂停";
- if (timerInterval) {
- clearInterval(timerInterval);
- timerInterval = null;
- }
- // 释放锁，允许系统在暂停时正常休眠
- if (wakeLock) {
-    wakeLock.release().then(() => { wakeLock = null; });
- }
- }
- }
-
- function handleLapClick() {
- if (!isRunning) return;
- lapCount++;
- renderAvatars();
- 
- if (lapCount % 2 === 0) {
- triggerLapCalculation();
- }
- 
- if (lapCount >= 12) {
- isRunning = false;
- if (timerInterval) {
- clearInterval(timerInterval);
- timerInterval = null;
- }
- if (wakeLock) {
-    wakeLock.release().then(() => { wakeLock = null; });
- }
- startBtn.style.display = "none";
- lapBtn.style.display = "none";
- statusBar.innerText = "🏁 完赛！";
- } else {
- let currentDistText = (lapCount * 0.5) + " km";
