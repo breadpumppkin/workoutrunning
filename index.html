@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
  <title>跑表 | 6公里直道竞技场</title>
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
- <meta name="apple-mobile-web-app-title" content="竞技跑表">
  <style>
- body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; background-color: #000000; color: #ffffff; padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+ body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; background-color: #000000; color: #ffffff; padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; box-sizing: border-box; }
  #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; }
  .time-panel { width: 100%; display: flex; justify-content: space-around; text-align: center; }
  .time-box { flex: 1; }
@@ -16,16 +15,14 @@
  .time-num { font-size: 42px; font-weight: bold; font-variant-numeric: tabular-nums; }
  #prediction-box { font-size: 15px; color: #ffffff; min-height: 40px; margin: 5px 0; line-height: 1.4; text-align: center; }
  .predict-highlight { color: #34c759; font-weight: bold; }
- .arena { width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding: 10px 0; position: relative; z-index: 1; }
+ .arena { width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding: 10px 0; }
  .track-row { width: 100%; display: flex; flex-direction: column; position: relative; }
  .track-name { font-size: 11px; color: #8e8e93; margin-bottom: 18px; display: flex; justify-content: space-between; }
  .track-rail { position: relative; width: 100%; height: 4px; background: #2c2c2e; border-radius: 2px; }
  .mid-mark { position: absolute; left: 50%; top: -3px; width: 2px; height: 10px; background: #444; }
  .avatar { position: absolute; top: -20px; font-size: 20px; z-index: 10; transform: scaleX(-1) translateX(50%); }
- .pacer-av { color: #ff9500; }
- .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
- .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 999 !important; }
- .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; pointer-events: auto !important; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+ .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 999; }
+ .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; -webkit-tap-highlight-color: rgba(0,0,0,0); }
  .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
  .btn-hit:active { transform: scale(0.98); }
  .btn-group { display: flex; gap: 15px; }
@@ -50,31 +47,31 @@
  <div class="arena">
  <div class="track-row">
  <div class="track-name"><span>第 1 公里</span><span>0k - 1k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-0" class="avatar pacer-av" style="left:0%; display:block;">%F0%9F%8F%8E</div><div id="user-0" class="avatar user-av" style="left:0%; display:block;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-0" class="avatar" style="left:0%; display:block;">C</div><div id="user-0" class="avatar" style="left:0%; display:block;">P</div></div>
  </div>
  <div class="track-row">
  <div class="track-name"><span>第 2 公里</span><span>1k - 2k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-1" class="avatar pacer-av" style="left:0%; display:none;">%F0%9F%8F%8E</div><div id="user-1" class="avatar user-av" style="left:0%; display:none;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-1" class="avatar" style="left:0%; display:none;">C</div><div id="user-1" class="avatar" style="left:0%; display:none;">P</div></div>
  </div>
  <div class="track-row">
  <div class="track-name"><span>第 3 公里</span><span>2k - 3k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-2" class="avatar pacer-av" style="left:0%; display:none;">%F0%9F%8F%8E</div><div id="user-2" class="avatar user-av" style="left:0%; display:none;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-2" class="avatar" style="left:0%; display:none;">C</div><div id="user-2" class="avatar" style="left:0%; display:none;">P</div></div>
  </div>
  <div class="track-row">
  <div class="track-name"><span>第 4 公里</span><span>3k - 4k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-3" class="avatar pacer-av" style="left:0%; display:none;">%F0%9F%8F%8E</div><div id="user-3" class="avatar user-av" style="left:0%; display:none;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-3" class="avatar" style="left:0%; display:none;">C</div><div id="user-3" class="avatar" style="left:0%; display:none;">P</div></div>
  </div>
  <div class="track-row">
  <div class="track-name"><span>第 5 公里</span><span>4k - 5k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-4" class="avatar pacer-av" style="left:0%; display:none;">%F0%9F%8F%8E</div><div id="user-4" class="avatar user-av" style="left:0%; display:none;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-4" class="avatar" style="left:0%; display:none;">C</div><div id="user-4" class="avatar" style="left:0%; display:none;">P</div></div>
  </div>
  <div class="track-row">
  <div class="track-name"><span>第 6 公里 (冲刺)</span><span>5k - 6k</span></div>
- <div class="track-rail"><div class="mid-mark"></div><div id="pacer-5" class="avatar pacer-av" style="left:0%; display:none;">%F0%9F%8F%8E</div><div id="user-5" class="avatar user-av" style="left:0%; display:none;">%F0%9F%8F%83</div></div>
+ <div class="track-rail"><div class="mid-mark"></div><div id="pacer-5" class="avatar" style="left:0%; display:none;">C</div><div id="user-5" class="avatar" style="left:0%; display:none;">P</div></div>
  </div>
  </div>
  <div class="controls">
- <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃 到了！打卡下一个500米</button>
+ <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">到了！打卡下一个500米</button>
  <div class="btn-group">
  <button class="btn btn-side" id="resetBtn" onclick="handleResetClick()">清零</button>
  <button class="btn btn-side" id="startBtn" onclick="handleStartClick()">开始跑步</button>
@@ -193,7 +190,7 @@
  statusBar.innerText = "🏁 完赛！";
  } else {
  let currentDistText = (lapCount * 0.5) + " km";
- statusBar.innerText = "⏱️ 打卡成功 (当前已确认距离: " + currentDistText + ")";
+ statusBar.innerText = "打卡成功 (" + currentDistText + ")";
  }
  }
  function handleResetClick() {
@@ -209,3 +206,12 @@
  timeEl.innerText = "00:00";
  remainingEl.innerText = "--:--";
  predictionBox.innerText = "请点击下方“开始跑步”按钮";
+ statusBar.innerText = "⏳ 待机中";
+ startBtn.innerText = "开始跑步";
+ startBtn.style.display = "block";
+ lapBtn.style.display = "none";
+ renderAvatars();
+ }
+ </script>
+</body>
+</html>
