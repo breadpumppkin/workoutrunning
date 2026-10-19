@@ -17,8 +17,6 @@
             color: #ffffff;
             padding: 15px 20px;
             box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
         }
         #status-bar {
             font-size: 13px;
@@ -112,7 +110,7 @@
             transition: left 0.25s ease;
         }
         
-        /* 底部控制 */
+        /* 底部控制按钮优化 */
         .controls {
             width: 100%;
             display: flex;
@@ -128,6 +126,8 @@
             cursor: pointer;
             text-align: center;
             outline: none;
+            /* 解决移动端点击高亮延迟 */
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
         }
         .btn-hit {
             padding: 20px 0;
@@ -148,11 +148,14 @@
             font-size: 16px;
             background-color: #1c1c1e;
         }
-        #startBtn {
+        .btn-side:active {
+            background-color: #2c2c2e;
+        }
+        #btn-action-start {
             color: #34c759;
             border: 1px solid #34c759;
         }
-        #resetBtn {
+        #btn-action-reset {
             color: #8e8e93;
         }
     </style>
@@ -201,80 +204,70 @@
     </div>
     
     <div class="controls">
-        <button class="btn btn-hit" id="lapBtn" onclick="handleLapClick()" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
+        <!-- 核心重构：彻底更改ID命名规则，从根源杜绝浏览器全局对象污染 -->
+        <button class="btn btn-hit" id="btn-action-lap" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
         <div class="btn-group">
-            <button class="btn btn-side" id="resetBtn" onclick="handleResetClick()">清零</button>
-            <button class="btn btn-side" id="startBtn" onclick="handleStartClick()">开始跑步</button>
+            <button class="btn btn-side" id="btn-action-reset">清零</button>
+            <button class="btn btn-side" id="btn-action-start">开始跑步</button>
         </div>
     </div>
 
     <script>
-        let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
-        let lapCount = 0;
-        const TARGET_SECONDS = 35 * 60; 
-        const TIME_PER_KM = TARGET_SECONDS / 6; 
-        
-        // 彻底改为 let 声明，避免任何引擎层面的赋值死锁错误
-        let timeEl = document.getElementById('total-time');
-        let remainingEl = document.getElementById('remaining-time');
-        let startBtn = document.getElementById('startBtn');
-        let lapBtn = document.getElementById('lapBtn');
-        let predictionBox = document.getElementById('prediction-box');
-        let statusBar = document.getElementById('status-bar');
-
-        function hideAllAvatars() {
-            for(let i=0; i<6; i++) {
-                document.getElementById('pacer-' + i).style.display = 'none';
-                document.getElementById('user-' + i).style.display = 'none';
-            }
-        }
-
-        function renderAvatars() {
-            hideAllAvatars();
-            let elapsedSec = elapsedTime / 1000;
-
-            let pacerTrackIdx = Math.floor(elapsedSec / TIME_PER_KM);
-            if (pacerTrackIdx < 0) pacerTrackIdx = 0;
-            if (pacerTrackIdx > 5) pacerTrackIdx = 5;
-            let pacerTrackSec = elapsedSec - (pacerTrackIdx * TIME_PER_KM);
-            let pacerPct = (pacerTrackSec / TIME_PER_KM) * 100;
+        // 将所有逻辑放入 window.onload 沙箱中，确保DOM树完全就绪后由安全的局部作用域接管
+        window.onload = function() {
+            let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
+            let lapCount = 0;
+            const TARGET_SECONDS = 35 * 60; 
+            const TIME_PER_KM = TARGET_SECONDS / 6; 
             
-            if (elapsedSec >= TARGET_SECONDS) {
-                pacerTrackIdx = 5;
-                pacerPct = 100;
-            }
-            
-            let pacerNode = document.getElementById('pacer-' + pacerTrackIdx);
-            if(pacerNode) {
-                pacerNode.style.left = pacerPct + '%';
-                pacerNode.style.display = 'block';
-            }
+            let domTime = document.getElementById('total-time');
+            let domRemaining = document.getElementById('remaining-time');
+            let domStartBtn = document.getElementById('btn-action-start');
+            let domLapBtn = document.getElementById('btn-action-lap');
+            let domPredictionBox = document.getElementById('prediction-box');
+            let domStatusBar = document.getElementById('status-bar');
+            let domResetBtn = document.getElementById('btn-action-reset');
 
-            let userTrackIdx = 0;
-            let userPct = 0;
-            if (lapCount > 0) {
-                userTrackIdx = Math.floor((lapCount - 1) / 2);
-                if (userTrackIdx > 5) userTrackIdx = 5;
-                userPct = (lapCount % 2 === 1) ? 50 : 100;
-                
-                if(lapCount >= 12) {
-                    userTrackIdx = 5;
-                    userPct = 100;
+            function hideAllAvatars() {
+                for(let i=0; i<6; i++) {
+                    document.getElementById('pacer-' + i).style.display = 'none';
+                    document.getElementById('user-' + i).style.display = 'none';
                 }
             }
 
-            let userNode = document.getElementById('user-' + userTrackIdx);
-            if(userNode) {
-                userNode.style.left = userPct + '%';
-                userNode.style.display = 'block';
-            }
-        }
+            function renderAvatars() {
+                hideAllAvatars();
+                let elapsedSec = elapsedTime / 1000;
 
-        function formatTime(seconds) {
-            let m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            let s = Math.floor(seconds % 60).toString().padStart(2, '0');
-            return m + ":" + s;
-        }
+                let pacerTrackIdx = Math.floor(elapsedSec / TIME_PER_KM);
+                if (pacerTrackIdx < 0) pacerTrackIdx = 0;
+                if (pacerTrackIdx > 5) pacerTrackIdx = 5;
+                let pacerTrackSec = elapsedSec - (pacerTrackIdx * TIME_PER_KM);
+                let pacerPct = (pacerTrackSec / TIME_PER_KM) * 100;
+                
+                if (elapsedSec >= TARGET_SECONDS) {
+                    pacerTrackIdx = 5;
+                    pacerPct = 100;
+                }
+                
+                let pacerNode = document.getElementById('pacer-' + pacerTrackIdx);
+                if(pacerNode) {
+                    pacerNode.style.left = pacerPct + '%';
+                    pacerNode.style.display = 'block';
+                }
 
-        function updatePrediction() {
-            if (lapCount === 0) {
+                let userTrackIdx = 0;
+                let userPct = 0;
+                if (lapCount > 0) {
+                    userTrackIdx = Math.floor((lapCount - 1) / 2);
+                    if (userTrackIdx > 5) userTrackIdx = 5;
+                    userPct = (lapCount % 2 === 1) ? 50 : 100;
+                    
+                    if(lapCount >= 12) {
+                        userTrackIdx = 5;
+                        userPct = 100;
+                    }
+                }
+
+                let userNode = document.getElementById('user-' + userTrackIdx);
+                if(userNode) {
