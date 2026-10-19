@@ -24,7 +24,7 @@
  .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
  /* 按钮面板 */
  .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
- .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+ .btn { width: 100%; border: none; border-radius: 16px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
  .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
  .btn-hit:active { transform: scale(0.98); }
  .btn-group { display: flex; gap: 15px; }
@@ -47,6 +47,7 @@
  </div>
  <div id="prediction-box">请点击下方“开始跑步”按钮</div>
  
+ <!-- 🏁 6公里6条跑道 -->
  <div class="arena">
  <div class="track-row">
  <div class="track-name"><span>第 1 公里</span><span>0k - 1k</span></div>
@@ -137,7 +138,7 @@
  isRunning = true;
  startBtn.innerText = "暂停跑步";
  lapBtn.style.display = "block";
- statusBar.innerText = "🟢 ⏳ 计时中";
+ statusBar.innerText = "⏳ 计时中";
  
  startTime = Date.now() - elapsedTime;
  timerInterval = setInterval(() => {
@@ -152,7 +153,7 @@
  
  renderAvatars();
  if (lapCount === 0) {
- predictionBox.innerText = "已开跑！通过500米时请打卡";
+ predictionBox.innerText = "已开跑！通过第一个500米时请打卡";
  } else {
  let currentDist = lapCount * 0.5;
  let currentSec = elapsedTime / 1000;
@@ -166,7 +167,10 @@
  isRunning = false;
  startBtn.innerText = "继续跑步";
  statusBar.innerText = "⏸️ 已暂停";
+ if (timerInterval) {
  clearInterval(timerInterval);
+ timerInterval = null;
+ }
  }
  }
 
@@ -176,7 +180,10 @@
  renderAvatars();
  if (lapCount >= 12) {
  isRunning = false;
+ if (timerInterval) {
  clearInterval(timerInterval);
+ timerInterval = null;
+ }
  startBtn.style.display = "none";
  lapBtn.style.display = "none";
  statusBar.innerText = "🏁 完赛！";
@@ -188,7 +195,10 @@
 
  function handleResetClick() {
  isRunning = false;
+ if (timerInterval) {
  clearInterval(timerInterval);
+ timerInterval = null;
+ }
  elapsedTime = 0;
  lapCount = 0;
  timeEl.innerText = "00:00";
@@ -200,11 +210,6 @@
  lapBtn.style.display = "none";
  renderAvatars();
  }
-
- // 手机端防手势吞噬双向保障通道
- startBtn.addEventListener('touchstart', function(e) { e.preventDefault(); handleStartClick(); }, {passive: false});
- lapBtn.addEventListener('touchstart', function(e) { e.preventDefault(); handleLapClick(); }, {passive: false});
- resetBtn.addEventListener('touchstart', function(e) { e.preventDefault(); handleResetClick(); }, {passive: false});
  </script>
 </body>
 </html>
