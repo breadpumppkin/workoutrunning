@@ -19,7 +19,7 @@
  .track-name { font-size: 11px; color: #8e8e93; margin-bottom: 18px; display: flex; justify-content: space-between; }
  .track-rail { position: relative; width: 100%; height: 4px; background: #2c2c2e; border-radius: 2px; }
  .mid-mark { position: absolute; left: 50%; top: -3px; width: 2px; height: 10px; background: #444; }
- .avatar { position: absolute; top: -20px; font-size: 20px; transform: translateX(-50%); z-index: 10; }
+ .avatar { position: absolute; top: -20px; font-size: 20px; z-index: 10; transform: scaleX(-1) translateX(50%); }
  .pacer-av { color: #ff9500; }
  .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
  /* 按钮面板 */
@@ -41,13 +41,12 @@
  <div id="total-time" class="time-num">00:00</div>
  </div>
  <div class="time-box">
- <div class="label">目标剩余</div>
- <div id="remaining-time" class="time-num">35:00</div>
+ <div class="label">预计总用时</div>
+ <div id="remaining-time" class="time-num">--:--</div>
  </div>
  </div>
  <div id="prediction-box">请点击下方“开始跑步”按钮</div>
  
- <!-- 🏁 6公里6条跑道 -->
  <div class="arena">
  <div class="track-row">
  <div class="track-name"><span>第 1 公里</span><span>0k - 1k</span></div>
@@ -86,8 +85,9 @@
  <script>
  let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
  let lapCount = 0;
- const TARGET_SECONDS = 35 * 60;
- const TIME_PER_KM = TARGET_SECONDS / 6; 
+ const TOTAL_KM = 6;
+ const TARGET_SECONDS = 35 * 60; // 参考基准：35分钟跑完6公里
+ const TIME_PER_KM = TARGET_SECONDS / TOTAL_KM; 
  
  const timeEl = document.getElementById('total-time');
  const remainingEl = document.getElementById('remaining-time');
@@ -133,6 +133,42 @@
  }
  }
 
+ function formatTimeDisplay(seconds) {
+ let m = Math.floor(seconds / 60).toString().padStart(2, '0');
+ let s = Math.floor(seconds % 60).toString().padStart(2, '0');
+ return m + ":" + s;
+ }
+
+ // 🌟 核心修改点：此计算函数只在用户“手动点击打卡按钮”的瞬间才执行 🌟
+ function triggerLapCalculation() {
+ if (lapCount === 0) {
+ predictionBox.innerText = "已开跑！通过500米或1公里时点击打卡";
+ remainingEl.innerText = "--:--";
+ return;
+ }
+
+ let currentDistance = lapCount * 0.5; // 当前手动确定的距离 (公里)
+ let currentSec = elapsedTime / 1000;  // 当前跑的总时间 (秒)
+ 
+ // 1. 计算当前跑的平均速度（即当前公里配速 = 秒/公里）
+ let avgSpeedPace = currentSec / currentDistance; 
+ 
+ // 转化为标准的跑友配速文本 (分钟'秒'')
+ let paceM = Math.floor(avgSpeedPace / 60);
+ let paceS = Math.floor(avgSpeedPace % 60).toString().padStart(2, '0');
+ 
+ // 2. 计算完成6公里剩下的距离
+ let remainingDistance = TOTAL_KM - currentDistance;
+ 
+ // 3. 严格执行您的公式：剩余距离 / 当前跑的平均速度 + 目前跑的时间
+ let remainingTimeSec = remainingDistance * avgSpeedPace;
+ let predictedTotalSec = remainingTimeSec + currentSec;
+
+ // 4. 直接定格刷新面板，在下一次按键前，这个数字保持静止，不再乱跳
+ remainingEl.innerText = formatTimeDisplay(predictedTotalSec);
+ predictionBox.innerHTML = "当前打卡平均速度: <span class='predict-highlight'>" + paceM + "'" + paceS + "''/km</span>";
+ }
+
  function handleStartClick() {
  if (!isRunning) {
  isRunning = true;
@@ -143,24 +179,14 @@
  startTime = Date.now() - elapsedTime;
  timerInterval = setInterval(() => {
  elapsedTime = Date.now() - startTime;
- let m = Math.floor(elapsedTime / 60000).toString().padStart(2, '0');
- let s = Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0');
- timeEl.innerText = m + ":" + s;
- let remSec = Math.max(TARGET_SECONDS - Math.floor(elapsedTime / 1000), 0);
- let remM = Math.floor(remSec / 60).toString().padStart(2, '0');
- let remS = (remSec % 60).toString().padStart(2, '0');
- remainingEl.innerText = remM + ":" + remS; 
+ 
+ // 计时器只管刷新左侧的真实秒数和轨道动画，绝不触碰右侧和速度计算
+ let totalSec = Math.floor(elapsedTime / 1000);
+ timeEl.innerText = formatTimeDisplay(totalSec);
  
  renderAvatars();
  if (lapCount === 0) {
- predictionBox.innerText = "已开跑！通过第一个500米时请打卡";
- } else {
- let currentDist = lapCount * 0.5;
- let currentSec = elapsedTime / 1000;
- let predSec = (currentSec / currentDist) * 6;
- let predM = Math.floor(predSec / 60).toString().padStart(2, '0');
- let predS = Math.floor(predSec % 60).toString().padStart(2, '0');
- predictionBox.innerHTML = "预计完赛时间: <span class='predict-highlight'>" + predM + ":" + predS + "</span>";
+ predictionBox.innerText = "已开跑！请在通过第1个500米/1公里时点击打卡";
  }
  }, 250); 
  } else {
@@ -178,6 +204,10 @@
  if (!isRunning) return;
  lapCount++;
  renderAvatars();
+ 
+ // 🌟 每次点击500米到了的时候，触发锁定计算 🌟
+ triggerLapCalculation();
+ 
  if (lapCount >= 12) {
  isRunning = false;
  if (timerInterval) {
@@ -187,9 +217,11 @@
  startBtn.style.display = "none";
  lapBtn.style.display = "none";
  statusBar.innerText = "🏁 完赛！";
- predictionBox.innerText = "恭喜你完成了6公里冲刺！";
+ predictionBox.innerHTML = "🎉 完赛！最终平均速度: " + predictionBox.innerText.replace("当前打卡平均速度: ", "");
  } else {
- statusBar.innerText = "⏱️ 第 " + lapCount + " 个500M打卡成功";
+ // 根据你的描述，可以在这里选择展示是半公里还是整数公里
+ let currentDistText = (lapCount * 0.5) + " km";
+ statusBar.innerText = "⏱️ 打卡成功 (当前已确认距离: " + currentDistText + ")";
  }
  }
 
@@ -202,7 +234,7 @@
  elapsedTime = 0;
  lapCount = 0;
  timeEl.innerText = "00:00";
- remainingEl.innerText = "35:00";
+ remainingEl.innerText = "--:--";
  predictionBox.innerText = "请点击下方“开始跑步”按钮";
  statusBar.innerText = "⏳ 待机中";
  startBtn.innerText = "开始跑步";
