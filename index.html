@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>跑表 | 6公里直道竞技场</title>
+    <title>跑表雷达检测版 | 6公里直道竞技场</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -17,6 +17,8 @@
             color: #ffffff;
             padding: 15px 20px;
             box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
         }
         #status-bar {
             font-size: 13px;
@@ -46,9 +48,9 @@
             font-variant-numeric: tabular-nums;
         }
         #prediction-box {
-            font-size: 15px;
-            color: #ffffff;
-            min-height: 44px;
+            font-size: 14px;
+            color: #ff9500; /* 临时改成橙色方便看报错 */
+            min-height: 50px;
             margin: 5px 0;
             line-height: 1.4;
             text-align: center;
@@ -56,11 +58,13 @@
             align-items: center;
             justify-content: center;
             width: 100%;
+            background: #1c1c1e;
+            border-radius: 8px;
+            padding: 5px;
         }
         .predict-highlight { color: #34c759; font-weight: bold; }
         .predict-warn { color: #ff3b30; font-weight: bold; }
         
-        /* 🏁 6公里6条跑道 */
         .arena {
             width: 100%;
             flex: 1;
@@ -110,7 +114,6 @@
             transition: left 0.25s ease;
         }
         
-        /* 底部控制按钮优化 */
         .controls {
             width: 100%;
             display: flex;
@@ -126,18 +129,13 @@
             cursor: pointer;
             text-align: center;
             outline: none;
-            /* 解决移动端点击高亮延迟 */
+            touch-action: manipulation;
             -webkit-tap-highlight-color: rgba(0,0,0,0);
         }
         .btn-hit {
             padding: 20px 0;
             font-size: 20px;
             background-color: #34c759;
-            box-shadow: 0 4px 15px rgba(52,199,89,0.3);
-        }
-        .btn-hit:active {
-            transform: scale(0.98);
-            background-color: #2da94f;
         }
         .btn-group {
             display: flex;
@@ -148,14 +146,11 @@
             font-size: 16px;
             background-color: #1c1c1e;
         }
-        .btn-side:active {
-            background-color: #2c2c2e;
-        }
-        #btn-action-start {
+        #finalStartBtn {
             color: #34c759;
             border: 1px solid #34c759;
         }
-        #btn-action-reset {
+        #finalResetBtn {
             color: #8e8e93;
         }
     </style>
@@ -174,7 +169,8 @@
         </div>
     </div>
     
-    <div id="prediction-box">请点击下方“开始跑步”按钮</div>
+    <!-- 🌟 这个框会实时打印手机里的异常报错 🌟 -->
+    <div id="prediction-box">雷达就绪：请点击下方“开始跑步”检测报错</div>
     
     <div class="arena">
         <div class="track-row">
@@ -204,70 +200,81 @@
     </div>
     
     <div class="controls">
-        <!-- 核心重构：彻底更改ID命名规则，从根源杜绝浏览器全局对象污染 -->
-        <button class="btn btn-hit" id="btn-action-lap" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
+        <button class="btn btn-hit" id="finalLapBtn" style="display:none;">🏃‍♂️ 到了！打卡下一个500米</button>
         <div class="btn-group">
-            <button class="btn btn-side" id="btn-action-reset">清零</button>
-            <button class="btn btn-side" id="btn-action-start">开始跑步</button>
+            <button class="btn btn-side" id="finalResetBtn">清零</button>
+            <button class="btn btn-side" id="finalStartBtn">开始跑步</button>
         </div>
     </div>
 
     <script>
-        // 将所有逻辑放入 window.onload 沙箱中，确保DOM树完全就绪后由安全的局部作用域接管
-        window.onload = function() {
-            let startTime = 0, elapsedTime = 0, timerInterval = null, isRunning = false;
-            let lapCount = 0;
-            const TARGET_SECONDS = 35 * 60; 
-            const TIME_PER_KM = TARGET_SECONDS / 6; 
-            
-            let domTime = document.getElementById('total-time');
-            let domRemaining = document.getElementById('remaining-time');
-            let domStartBtn = document.getElementById('btn-action-start');
-            let domLapBtn = document.getElementById('btn-action-lap');
-            let domPredictionBox = document.getElementById('prediction-box');
-            let domStatusBar = document.getElementById('status-bar');
-            let domResetBtn = document.getElementById('btn-action-reset');
+        var domPredictionBox = document.getElementById('prediction-box');
 
-            function hideAllAvatars() {
-                for(let i=0; i<6; i++) {
-                    document.getElementById('pacer-' + i).style.display = 'none';
-                    document.getElementById('user-' + i).style.display = 'none';
+        // 🚨 雷达1号：捕获页面初装及运行时的任何致命阻塞报错
+        window.onerror = function(message, source, lineno, colno, error) {
+            var errText = "【运行报错】" + message + " (行:" + lineno + ")";
+            domPredictionBox.innerText = errText;
+            alert(errText); // 弹窗强力拦截提示
+            return false;
+        };
+
+        var runStartTime = 0;
+        var runElapsedTime = 0;
+        var runTimerInterval = null;
+        var runIsRunning = false;
+        var runLapCount = 0;
+        
+        var TARGET_SECONDS = 35 * 60; 
+        var TIME_PER_KM = TARGET_SECONDS / 6; 
+        
+        var domTotalTime = document.getElementById('total-time');
+        var domRemainingTime = document.getElementById('remaining-time');
+        var domStartBtn = document.getElementById('finalStartBtn');
+        var domLapBtn = document.getElementById('finalLapBtn');
+        var domStatusBar = document.getElementById('status-bar');
+        var domResetBtn = document.getElementById('finalResetBtn');
+
+        function clearAllAvatars() {
+            for(var i = 0; i < 6; i++) {
+                document.getElementById('pacer-' + i).style.display = 'none';
+                document.getElementById('user-' + i).style.display = 'none';
+            }
+        }
+
+        function updateAvatarPositions() {
+            clearAllAvatars();
+            var currentSec = runElapsedTime / 1000;
+
+            var pacerIdx = Math.floor(currentSec / TIME_PER_KM);
+            if (pacerIdx < 0) pacerIdx = 0;
+            if (pacerIdx > 5) pacerIdx = 5;
+            var pacerTrackSec = currentSec - (pacerIdx * TIME_PER_KM);
+            var pacerPercent = (pacerTrackSec / TIME_PER_KM) * 100;
+            
+            if (currentSec >= TARGET_SECONDS) {
+                pacerIdx = 5;
+                pacerPercent = 100;
+            }
+            
+            var nodePacer = document.getElementById('pacer-' + pacerIdx);
+            if(nodePacer) {
+                nodePacer.style.left = pacerPercent + '%';
+                nodePacer.style.display = 'block';
+            }
+
+            var userIdx = 0;
+            var userPercent = 0;
+            if (runLapCount > 0) {
+                userIdx = Math.floor((runLapCount - 1) / 2);
+                if (userIdx > 5) userIdx = 5;
+                userPercent = (runLapCount % 2 === 1) ? 50 : 100;
+                
+                if(runLapCount >= 12) {
+                    userIdx = 5;
+                    userPercent = 100;
                 }
             }
 
-            function renderAvatars() {
-                hideAllAvatars();
-                let elapsedSec = elapsedTime / 1000;
-
-                let pacerTrackIdx = Math.floor(elapsedSec / TIME_PER_KM);
-                if (pacerTrackIdx < 0) pacerTrackIdx = 0;
-                if (pacerTrackIdx > 5) pacerTrackIdx = 5;
-                let pacerTrackSec = elapsedSec - (pacerTrackIdx * TIME_PER_KM);
-                let pacerPct = (pacerTrackSec / TIME_PER_KM) * 100;
-                
-                if (elapsedSec >= TARGET_SECONDS) {
-                    pacerTrackIdx = 5;
-                    pacerPct = 100;
-                }
-                
-                let pacerNode = document.getElementById('pacer-' + pacerTrackIdx);
-                if(pacerNode) {
-                    pacerNode.style.left = pacerPct + '%';
-                    pacerNode.style.display = 'block';
-                }
-
-                let userTrackIdx = 0;
-                let userPct = 0;
-                if (lapCount > 0) {
-                    userTrackIdx = Math.floor((lapCount - 1) / 2);
-                    if (userTrackIdx > 5) userTrackIdx = 5;
-                    userPct = (lapCount % 2 === 1) ? 50 : 100;
-                    
-                    if(lapCount >= 12) {
-                        userTrackIdx = 5;
-                        userPct = 100;
-                    }
-                }
-
-                let userNode = document.getElementById('user-' + userTrackIdx);
-                if(userNode) {
+            var nodeUser = document.getElementById('user-' + userIdx);
+            if(nodeUser) {
+                nodeUser.style.left = userPercent + '%';
