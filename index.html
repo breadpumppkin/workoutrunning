@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>挑战永不停歇</title>
+  <title>6公里直道竞技场</title>
   <style>
     :root {
-      --bg-color: #0b0b0f;
-      --card-bg: #16161f;
+      --bg-color: #08080c;
+      --card-bg: linear-gradient(135deg, #13131a 0%, #1a1a24 100%);
+      --accent-blue: #3b82f6;       
+      --accent-blue-glow: rgba(59, 130, 246, 0.25);
+      --accent-yellow: #f59e0b;     
+      --accent-yellow-glow: rgba(245, 158, 11, 0.2);
       --accent-green: #10b981;
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.08);
     }
 
     * {
@@ -28,24 +33,62 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px 16px env(safe-area-inset-bottom, 20px) 16px;
+      padding: 20px 16px env(safe-area-inset-bottom, 24px) 16px;
       overflow-x: hidden;
+      background-image: radial-gradient(circle at 50% 0%, #18182b 0%, transparent 70%);
     }
 
+    /* 顶部操作与状态区 */
     header {
       text-align: center;
-      padding-top: 10px;
+    }
+
+    .top-action-area {
+      margin-bottom: 16px;
+    }
+
+    .btn-main {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 20px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      letter-spacing: 0.5px;
+      transition: transform 0.1s ease;
+    }
+
+    .btn-main:active {
+      transform: scale(0.97);
+    }
+
+    /* 开始跑步按钮 (初始在上方) */
+    .btn-start {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 8px 25px var(--accent-blue-glow);
+    }
+
+    /* 到了打卡按钮 (开始后常驻上方方便狂按) */
+    .btn-punch {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #000;
+      display: none;
+      box-shadow: 0 8px 25px var(--accent-yellow-glow);
     }
 
     .status-badge {
       display: inline-block;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-green);
-      padding: 6px 16px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent-blue);
+      padding: 5px 16px;
       border-radius: 20px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 500;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .metrics-container {
@@ -54,206 +97,351 @@
       align-items: center;
       width: 100%;
       margin-bottom: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 14px 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     .metric-box {
       text-align: center;
+      flex: 1;
     }
 
     .metric-label {
-      font-size: 13px;
+      font-size: 11px;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .metric-value {
-      font-size: 36px;
+      font-size: 30px;
       font-weight: 700;
       letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
     }
 
     .speed-info {
       text-align: center;
-      font-size: 15px;
+      font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 25px;
+      margin-bottom: 14px;
     }
 
     .speed-info span {
-      color: var(--accent-green);
+      color: var(--accent-blue);
       font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* 赛道进度展示区 */
+    /* 上方的单公里分段成绩看板 */
+    .laps-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 8px;
+    }
+
+    .lap-card {
+      background: #121219;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    .lap-card-title {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .lap-card-time {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lap-card.empty .lap-card-time {
+      color: #4b5563;
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    /* 中间赛道展示区 */
     .track-list {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .track-item {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
-    }
-
-    .track-item.active {
-      border-color: var(--accent-green);
-      background: rgba(16, 185, 129, 0.05);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .track-item.completed {
-      opacity: 0.6;
+      border-color: rgba(59, 130, 246, 0.25);
+      box-shadow: 0 4px 20px var(--accent-blue-glow);
+    }
+
+    .track-item.pending {
+      border-color: rgba(245, 158, 11, 0.15);
+      opacity: 0.85;
+    }
+
+    .track-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
     }
 
     .track-title {
-      font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .track-item.completed .track-title {
+      color: var(--accent-blue);
+    }
+    .track-item.pending .track-title {
+      color: var(--accent-yellow);
     }
 
     .track-range {
-      font-size: 13px;
       color: var(--text-muted);
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
-    /* 底部按钮控制区 */
-    .control-area {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .track-bar-container {
+      height: 14px;
+      background: #0d0d12;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 7px;
+      position: relative;
+      overflow: visible;
+      margin: 6px 0 2px 0;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
     }
 
-    .btn-primary {
-      width: 100%;
-      background-color: var(--accent-green);
-      color: #000;
-      border: none;
-      border-radius: 16px;
-      padding: 18px;
+    .track-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .track-item.completed .track-progress-fill {
+      background: rgba(59, 130, 246, 0.35);
+    }
+    .track-item.pending .track-progress-fill {
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    .racer-icon {
+      position: absolute;
+      top: -11px;
+      transform: translateX(-50%) scaleX(-1);
       font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: transform 0.1s ease, background-color 0.2s;
+      transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 3;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    .btn-primary:active {
-      transform: scale(0.98);
-      background-color: #059669;
-    }
-
-    .btn-group {
+    /* 底部辅助按钮区（暂停、清零） */
+    .control-area {
       display: flex;
       gap: 12px;
     }
 
     .btn-secondary {
       flex: 1;
-      background-color: #27272a;
+      background: #181824;
       color: var(--text-main);
-      border: none;
+      border: 1px solid var(--border-color);
       border-radius: 14px;
-      padding: 14px;
-      font-size: 15px;
+      padding: 12px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       touch-action: manipulation;
     }
 
     .btn-secondary:active {
-      background-color: #3f3f46;
+      background-color: #272738;
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div id="statusBadge" class="status-badge">准备就绪 (0.0 km)</div>
+    <!-- 屏幕最上方：核心操作按钮 -->
+    <div class="top-action-area">
+      <button id="startBtn" class="btn-main btn-start" onclick="startWorkout()">🚀 开始跑步</button>
+      <button id="punchBtn" class="btn-main btn-punch" onclick="handlePunch()">🏁 到了！打卡下一个500米</button>
+    </div>
+
+    <div id="statusBadge" class="status-badge">准备就绪 · 等待出发</div>
     
     <div class="metrics-container">
       <div class="metric-box">
         <div class="metric-label">已跑时间</div>
         <div id="elapsedTime" class="metric-value">00:00</div>
       </div>
-      <div class="metric-box">
+      <div class="metric-box" style="border-left: 1px solid var(--border-color);">
         <div class="metric-label">预计总用时</div>
         <div id="estimatedTime" class="metric-value">--:--</div>
       </div>
     </div>
 
     <div class="speed-info">
-      目前平均速度: <span id="speedDisplay">0.00 km/h</span> (<span id="paceDisplay">--'--"/km</span>)
+      平均速度: <span id="speedDisplay">0.00 km/h</span> &nbsp;|&nbsp; 配速: <span id="paceDisplay">--'--"/km</span>
     </div>
+
+    <!-- 上方单公里分段看板 -->
+    <div class="laps-board" id="lapsBoard"></div>
   </header>
 
-  <!-- 6公里分段列表 -->
-  <div class="track-list" id="trackList">
-    <!-- 动态生成 -->
-  </div>
+  <!-- 中间赛道竞技场 -->
+  <div class="track-list" id="trackList"></div>
 
+  <!-- 底部辅助控制区 -->
   <div class="control-area">
-    <button id="actionBtn" class="btn-primary" onclick="handlePunch()">到了！打卡下一个500米</button>
-    <div class="btn-group">
-      <button class="btn-secondary" onclick="resetWorkout()">清零</button>
-      <button id="pauseBtn" class="btn-secondary" onclick="togglePause()">暂停跑步</button>
-    </div>
+    <button id="resetBtn" class="btn-secondary" onclick="resetWorkout()">清零重置</button>
+    <button id="pauseBtn" class="btn-secondary" onclick="togglePause()" disabled>暂停跑步</button>
   </div>
 
 <script>
-  const TOTAL_DISTANCE = 6.0; // 总距离 6 公里
-  const STEP_DISTANCE = 0.5;  // 每次打卡 500米 (0.5 km)
+  const TOTAL_DISTANCE = 6.0; 
+  const STEP_DISTANCE = 0.5;  
   
-  let currentKm = 0;          // 当前已跑距离
-  let startTime = null;       // 开始时间戳
-  let elapsedSeconds = 0;     // 已用总秒数
-  let timerInterval = null;   // 计时器句柄
-  let isRunning = false;      // 运行状态
-  let isPaused = false;       // 暂停状态
-  let wakeLock = null;        // 屏幕防锁屏句柄
+  let currentKm = 0;          
+  let startTime = null;       
+  let elapsedSeconds = 0;     
+  let timerInterval = null;   
+  let isRunning = false;      
+  let isPaused = false;       
+  let wakeLock = null;        
+
+  let lapTimes = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
   const tracks = [
-    { name: "第 1 公里", range: "0k - 1k" },
-    { name: "第 2 公里", range: "1k - 2k" },
-    { name: "第 3 公里", range: "2k - 3k" },
-    { name: "第 4 公里", range: "3k - 4k" },
-    { name: "第 5 公里", range: "4k - 5k" },
-    { name: "第 6 公里 (冲刺)", range: "5k - 6k" }
+    { id: 1, name: "第 1 公里", start: 0, end: 1 },
+    { id: 2, name: "第 2 公里", start: 1, end: 2 },
+    { id: 3, name: "第 3 公里", start: 2, end: 3 },
+    { id: 4, name: "第 4 公里", start: 3, end: 4 },
+    { id: 5, name: "第 5 公里", start: 4, end: 5 },
+    { id: 6, name: "第 6 公里 (冲刺)", start: 5, end: 6 }
   ];
 
-  // 初始化渲染赛道列表
+  function renderLapsBoard() {
+    const boardEl = document.getElementById('lapsBoard');
+    boardEl.innerHTML = '';
+    
+    for (let i = 1; i <= 6; i++) {
+      const lSec = lapTimes[i];
+      let timeText = '--:--';
+      let isEmpty = 'empty';
+      
+      if (lSec !== null) {
+        const lMin = Math.floor(lSec / 60);
+        const lS = Math.floor(lSec % 60).toString().padStart(2, '0');
+        timeText = `${lMin}'${lS}"`;
+        isEmpty = '';
+      }
+
+      const card = document.createElement('div');
+      card.className = `lap-card ${isEmpty}`;
+      card.innerHTML = `
+        <div class="lap-card-title">${i}k 独立用时</div>
+        <div class="lap-card-time">${timeText}</div>
+      `;
+      boardEl.appendChild(card);
+    }
+  }
+
   function renderTracks() {
     const listEl = document.getElementById('trackList');
     listEl.innerHTML = '';
     
-    // 计算当前处于第几公里区间 (0~1km 算第1公里，以此类推)
-    const currentKmIndex = Math.min(Math.floor(currentKm), 5);
-    
-    tracks.forEach((track, index) => {
-      let statusClass = '';
-      if (index < currentKmIndex || (currentKm >= 6)) {
-        statusClass = 'completed';
-      } else if (index === currentKmIndex && isRunning) {
-        statusClass = 'active';
+    const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
+    const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
+
+    tracks.forEach((track) => {
+      const statusClass = (currentKm >= track.end || currentKm > track.start) ? 'completed' : 'pending';
+
+      let runnerPct = 0;
+      let showRunner = false;
+      
+      if (currentKm >= track.end) {
+        runnerPct = 100;
+        showRunner = true;
+      } else if (currentKm > track.start && currentKm < track.end) {
+        runnerPct = ((currentKm - track.start) / (track.end - track.start)) * 100;
+        showRunner = true;
+      } else if (currentKm === track.start && track.start === 0 && (isRunning || elapsedSeconds > 0)) {
+        runnerPct = 0;
+        showRunner = true;
+      }
+
+      let carPct = 0;
+      let showCar = false;
+      
+      if (carDistance >= track.end) {
+        carPct = 100;
+        showCar = true;
+      } else if (carDistance > track.start && carDistance < track.end) {
+        carPct = ((carDistance - track.start) / (track.end - track.start)) * 100;
+        showCar = true;
+      } else if (carDistance === track.start && track.start === 0 && (isRunning || elapsedSeconds > 0)) {
+        carPct = 0;
+        showCar = true;
       }
 
       const div = document.createElement('div');
       div.className = `track-item ${statusClass}`;
       div.innerHTML = `
-        <span class="track-title">${track.name}</span>
-        <span class="track-range">${track.range}</span>
+        <div class="track-info-row">
+          <span class="track-title">${track.name}</span>
+          <span class="track-range">${track.start}k - ${track.end}k</span>
+        </div>
+        <div class="track-bar-container">
+          <div class="track-progress-fill" style="width: ${runnerPct}%"></div>
+          ${showRunner ? `<div class="racer-icon" style="left: ${runnerPct}%" title="运动员(你)">🏃</div>` : ''}
+          ${showCar ? `<div class="racer-icon" style="left: ${carPct}%; font-size: 18px;" title="35分钟蓝色赛车">🏎️</div>` : ''}
+        </div>
       `;
       listEl.appendChild(div);
     });
+
+    renderLapsBoard();
   }
 
-  // 核心：请求保持屏幕常亮 (iPhone Safari 支持)
   async function requestWakeLock() {
     try {
       if ('wakeLock' in navigator) {
@@ -264,7 +452,6 @@
     }
   }
 
-  // 释放常亮
   function releaseWakeLock() {
     if (wakeLock !== null) {
       wakeLock.release().catch(() => {});
@@ -272,57 +459,105 @@
     }
   }
 
-  // 监听页面可见性：用户切回 Safari 时自动重新锁屏常亮
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && isRunning && !isPaused) {
       await requestWakeLock();
     }
   });
 
-  // 主计时器循环
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
-    
     timerInterval = setInterval(() => {
       if (!isPaused && isRunning) {
         elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        updateDisplay();
+        updateTimerDisplayOnly();
+        renderTracks(); 
       }
     }, 1000);
   }
 
-  // 点击打卡 / 开始
+  function startWorkout() {
+    if (navigator.vibrate) navigator.vibrate(60);
+
+    isRunning = true;
+    isPaused = false;
+    startTime = Date.now();
+    elapsedSeconds = 0;
+    
+    requestWakeLock();
+    startTimer();
+
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('punchBtn').style.display = 'block';
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('statusBadge').innerText = "🔥 正在跑步中 (0.0 km)";
+    
+    renderTracks();
+  }
+
   function handlePunch() {
-    // 触觉反馈 (兼容支持的设备)
+    if (!isRunning) return;
     if (navigator.vibrate) navigator.vibrate(50);
 
-    if (!isRunning) {
-      // 第一次点击，正式开始
-      isRunning = true;
-      isPaused = false;
-      startTime = Date.now() - (elapsedSeconds * 1000);
-      requestWakeLock();
-      startTimer();
-    }
-
+    const prevKm = currentKm;
     if (currentKm < TOTAL_DISTANCE) {
       currentKm = Math.min(currentKm + STEP_DISTANCE, TOTAL_DISTANCE);
     }
 
-    updateDisplay();
+    const currentIntKm = Math.round(currentKm);
+    const prevIntKm = Math.round(prevKm);
+    if (currentIntKm > prevIntKm && currentIntKm <= 6) {
+      if (!window.cumulativeLapSeconds) window.cumulativeLapSeconds = {};
+      window.cumulativeLapSeconds[currentIntKm] = elapsedSeconds;
+
+      const prevSecs = currentIntKm === 1 ? 0 : (window.cumulativeLapSeconds[currentIntKm - 1] || 0);
+      lapTimes[currentIntKm] = elapsedSeconds - prevSecs;
+    }
+
+    triggerCalculation();
 
     if (currentKm >= TOTAL_DISTANCE) {
-      // 跑完 6 公里
       isRunning = false;
       releaseWakeLock();
       clearInterval(timerInterval);
-      document.getElementById('statusBadge').innerText = "🎉 挑战完成！";
-      document.getElementById('actionBtn').innerText = "已完成全部 6 公里";
-      document.getElementById('actionBtn').disabled = true;
+      document.getElementById('statusBadge').innerText = "🎉 挑战圆满完成！";
+      document.getElementById('punchBtn').innerText = "已完成全部 6 公里";
+      document.getElementById('punchBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = true;
     }
   }
 
-  // 暂停 / 继续
+  function updateTimerDisplayOnly() {
+    const mins = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+    const secs = (elapsedSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
+  }
+
+  function triggerCalculation() {
+    updateTimerDisplayOnly();
+
+    if (currentKm > 0 && elapsedSeconds > 0) {
+      const speed = currentKm / (elapsedSeconds / 3600);
+      document.getElementById('speedDisplay').innerText = `${speed.toFixed(2)} km/h`;
+
+      const paceTotalSec = elapsedSeconds / currentKm;
+      const paceMin = Math.floor(paceTotalSec / 60);
+      const paceSec = Math.floor(paceTotalSec % 60).toString().padStart(2, '0');
+      document.getElementById('paceDisplay').innerText = `${paceMin}'${paceSec}"/km`;
+
+      const remainingKm = TOTAL_DISTANCE - currentKm;
+      const remainingSeconds = speed > 0 ? (remainingKm / speed) * 3600 : 0;
+      const estTotalSec = elapsedSeconds + remainingSeconds;
+
+      const estMin = Math.floor(estTotalSec / 60).toString().padStart(2, '0');
+      const estSec = Math.floor(estTotalSec % 60).toString().padStart(2, '0');
+      document.getElementById('estimatedTime').innerText = `${estMin}:${estSec}`;
+
+      document.getElementById('statusBadge').innerText = `⚡ 已打卡 (${currentKm.toFixed(1)} / 6.0 km)`;
+    }
+    renderTracks();
+  }
+
   function togglePause() {
     if (!isRunning && elapsedSeconds === 0) return;
 
@@ -331,74 +566,46 @@
     
     if (isPaused) {
       isRunning = false;
-      releaseWakeLock;
+      releaseWakeLock();
       pauseBtn.innerText = "继续跑步";
-      document.getElementById('statusBadge').innerText = `已暂停 (${currentKm.toFixed(1)} km)`;
+      document.getElementById('statusBadge').innerText = `⏸️ 已暂停 (${currentKm.toFixed(1)} km)`;
     } else {
       isRunning = true;
       startTime = Date.now() - (elapsedSeconds * 1000);
       requestWakeLock();
       pauseBtn.innerText = "暂停跑步";
-      document.getElementById('statusBadge').innerText = `打卡成功 (${currentKm.toFixed(1)} km)`;
+      triggerCalculation();
     }
     renderTracks();
   }
 
-  // 清零重置
   function resetWorkout() {
     isRunning = false;
     isPaused = false;
     currentKm = 0;
     elapsedSeconds = 0;
     startTime = null;
+    window.cumulativeLapSeconds = {};
+    lapTimes = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
     if (timerInterval) clearInterval(timerInterval);
     releaseWakeLock();
 
-    document.getElementById('statusBadge').innerText = "准备就绪 (0.0 km)";
+    document.getElementById('statusBadge').innerText = "准备就绪 · 等待出发";
     document.getElementById('elapsedTime').innerText = "00:00";
     document.getElementById('estimatedTime').innerText = "--:--";
     document.getElementById('speedDisplay').innerText = "0.00 km/h";
     document.getElementById('paceDisplay').innerText = "--'--\"/km";
-    document.getElementById('actionBtn').innerText = "到了！打卡下一个500米";
-    document.getElementById('actionBtn').disabled = false;
+    
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('punchBtn').style.display = 'none';
+    document.getElementById('punchBtn').innerText = "🏁 到了！打卡下一个500米";
+    document.getElementById('punchBtn').disabled = false;
     document.getElementById('pauseBtn').innerText = "暂停跑步";
+    document.getElementById('pauseBtn').disabled = true;
     
     renderTracks();
   }
 
-  // 刷新所有计算与显示
-  function updateDisplay() {
-    // 1. 格式化已跑时间 (MM:SS)
-    const mins = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-    const secs = (elapsedSeconds % 60).toString().padStart(2, '0');
-    document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
-
-    if (currentKm > 0 && elapsedSeconds > 0) {
-      // 2. 速度计算 (km/h) = 距离 / (秒 / 3600)
-      const speed = (currentKm / (elapsedSeconds / 3600)).toFixed(2);
-      document.getElementById('speedDisplay').innerText = `${speed} km/h`;
-
-      // 3. 配速计算 (秒/公里)
-      const paceTotalSec = elapsedSeconds / currentKm;
-      const paceMin = Math.floor(paceTotalSec / 60);
-      const paceSec = Math.floor(paceTotalSec % 60).toString().padStart(2, '0');
-      document.getElementById('paceDisplay').innerText = `${paceMin}'${paceSec}"/km`;
-
-      // 4. 预计总用时 (按当前平均速度跑完 6km)
-      const estTotalSec = paceTotalSec * TOTAL_DISTANCE;
-      const estMin = Math.floor(estTotalSec / 60).toString().padStart(2, '0');
-      const estSec = Math.floor(estTotalSec % 60).toString().padStart(2, '0');
-      document.getElementById('estimatedTime').innerText = `${estMin}:${estSec}`;
-    }
-
-    if (currentKm > 0 && currentKm < TOTAL_DISTANCE && isRunning) {
-      document.getElementById('statusBadge').innerText = `打卡成功 (${currentKm.toFixed(1)} km)`;
-    }
-
-    renderTracks();
-  }
-
-  // 初始化首次渲染
   renderTracks();
 </script>
 </body>
