@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>挑战永不停歇</title>
+  <title>6公里直道竞技场</title>
   <style>
     :root {
       --bg-color: #08080c;
@@ -469,8 +469,11 @@
       currentKm = Math.min(currentKm + STEP_DISTANCE, TOTAL_DISTANCE);
     }
 
-    const currentIntKm = Math.round(currentKm);
-    const prevIntKm = Math.round(prevKm);
+    // 这里把 Math.round() 改成了 Math.floor()
+    const currentIntKm = Math.floor(currentKm);
+    const prevIntKm = Math.floor(prevKm);
+    
+    // 只有当距离向下取整的值增加时（比如从 0.5 变到 1.0），才记录新的 1 公里成绩
     if (currentIntKm > prevIntKm && currentIntKm <= 6) {
       if (!window.cumulativeLapSeconds) window.cumulativeLapSeconds = {};
       window.cumulativeLapSeconds[currentIntKm] = elapsedSeconds;
