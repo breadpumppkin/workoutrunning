@@ -84,19 +84,19 @@
       font-weight: 600;
     }
 
-    /* 赛道与进度区 */
+    /* 赛道与竞技展示区 */
     .track-list {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 15px;
     }
 
     .track-item {
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border: 1px solid rgba(255, 255, 255, 0.05);
       position: relative;
     }
@@ -105,7 +105,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 13px;
     }
 
@@ -119,35 +119,23 @@
 
     /* 赛道条样式 */
     .track-bar-container {
-      height: 10px;
+      height: 14px;
       background: #27272a;
-      border-radius: 5px;
+      border-radius: 7px;
       position: relative;
       overflow: visible;
+      margin: 6px 0 2px 0;
     }
 
-    /* 你的进度条 */
-    .runner-progress {
+    /* 运动员与蓝色赛车图标在赛道上的定位 */
+    .racer-icon {
       position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      background: var(--accent-green);
-      border-radius: 5px;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-
-    /* 赛车/参照物标记点 */
-    .car-marker {
-      position: absolute;
-      top: -4px;
-      width: 4px;
-      height: 18px;
-      background: #f59e0b; /* 橙黄色代表赛车目标 */
-      border-radius: 2px;
+      top: -12px;
       transform: translateX(-50%);
-      z-index: 2;
+      font-size: 18px;
+      transition: left 0.4s ease;
+      z-index: 3;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
 
     /* 底部按钮控制区 */
@@ -225,7 +213,7 @@
     </div>
   </header>
 
-  <!-- 6公里分段及赛车参照物列表 -->
+  <!-- 6公里分段及运动员/赛车竞技场 -->
   <div class="track-list" id="trackList"></div>
 
   <div class="control-area">
@@ -248,7 +236,6 @@
   let isPaused = false;       
   let wakeLock = null;        
 
-  // 6个公里区间
   const tracks = [
     { name: "第 1 公里", start: 0, end: 1 },
     { name: "第 2 公里", start: 1, end: 2 },
@@ -258,31 +245,42 @@
     { name: "第 6 公里 (冲刺)", start: 5, end: 6 }
   ];
 
-  // 渲染赛道进度与赛车参照线
+  // 渲染赛道：把“运动员”和“蓝色赛车”精准投射到对应的公里条中
   function renderTracks() {
     const listEl = document.getElementById('trackList');
     listEl.innerHTML = '';
     
-    // 赛车固定以 35分钟跑完6公里 计算当前走了多少公里
-    // 35分钟 = 2100秒，每秒速度 = 6 / 2100 km/s
+    // 35分钟跑完6公里 = 2100秒，每秒移动距离 = 6 / 2100 km/s
     const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
     const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
 
-    tracks.forEach((track, index) => {
-      // 1. 计算你在该段的进度百分比 (0~100%)
+    tracks.forEach((track) => {
+      // 1. 计算运动员（你）在这个分段赛道中的百分比位置 (0% ~ 100%)
       let runnerPct = 0;
+      let showRunner = false;
       if (currentKm >= track.end) {
         runnerPct = 100;
+        showRunner = true; // 跑过去了也显示在终点
       } else if (currentKm > track.start && currentKm < track.end) {
         runnerPct = ((currentKm - track.start) / (track.end - track.start)) * 100;
+        showRunner = true;
+      } else if (currentKm === track.start && track.start === 0 && (isRunning || elapsedSeconds > 0)) {
+        runnerPct = 0;
+        showRunner = true;
       }
 
-      // 2. 计算赛车在该段的位置百分比 (0~100%)
+      // 2. 计算蓝色赛车在这个分段赛道中的百分比位置 (0% ~ 100%)
       let carPct = 0;
+      let showCar = false;
       if (carDistance >= track.end) {
         carPct = 100;
+        showCar = true;
       } else if (carDistance > track.start && carDistance < track.end) {
         carPct = ((carDistance - track.start) / (track.end - track.start)) * 100;
+        showCar = true;
+      } else if (carDistance === track.start && track.start === 0 && (isRunning || elapsedSeconds > 0)) {
+        carPct = 0;
+        showCar = true;
       }
 
       const div = document.createElement('div');
@@ -293,8 +291,8 @@
           <span class="track-range">${track.start}k - ${track.end}k</span>
         </div>
         <div class="track-bar-container">
-          <div class="runner-progress" style="width: ${runnerPct}%"></div>
-          <div class="car-marker" style="left: ${carPct}%" title="35分钟配速参照赛车"></div>
+          ${showRunner ? `<div class="racer-icon" style="left: ${runnerPct}%" title="运动员(你)">🏃</div>` : ''}
+          ${showCar ? `<div class="racer-icon" style="left: ${carPct}%; font-size: 16px;" title="35分钟蓝色赛车">🏎️</div>` : ''}
         </div>
       `;
       listEl.appendChild(div);
@@ -325,19 +323,19 @@
     }
   });
 
-  // 主计时器：每一秒更新时间，同时让赛车参照物实时平滑往前走
+  // 主计时器：驱动已跑时间、蓝色赛车位移
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       if (!isPaused && isRunning) {
         elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
         updateTimerDisplayOnly();
-        renderTracks(); // 实时刷新赛车位置
+        renderTracks(); 
       }
     }, 1000);
   }
 
-  // 点击打卡
+  // 每次手动点击打卡
   function handlePunch() {
     if (navigator.vibrate) navigator.vibrate(50);
 
@@ -371,7 +369,7 @@
     document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
   }
 
-  // 计算逻辑：采用你确认的精准公式
+  // 触发计算：速度、配速、以及按你要求的公式计算预计总用时
   function triggerCalculation() {
     updateTimerDisplayOnly();
 
