@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>挑战永不停歇</title>
+  <title>6公里直道竞技场</title>
   <style>
     :root {
       --bg-color: #0b0b0f;
       --card-bg: #16161f;
       --accent-green: #10b981;
+      --accent-blue: #3b82f6;
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
     }
@@ -127,7 +128,7 @@
       margin: 6px 0 2px 0;
     }
 
-    /* 核心修改：通过 scaleX(-1) 将图标水平翻转，让它们正面朝右向前奔跑/行驶 */
+    /* 图标：通过 scaleX(-1) 调整朝向正面朝右 */
     .racer-icon {
       position: absolute;
       top: -12px;
@@ -145,10 +146,8 @@
       gap: 12px;
     }
 
-    .btn-primary {
+    .btn-main {
       width: 100%;
-      background-color: var(--accent-green);
-      color: #000;
       border: none;
       border-radius: 16px;
       padding: 18px;
@@ -156,17 +155,24 @@
       font-weight: 600;
       cursor: pointer;
       touch-action: manipulation;
+      transition: transform 0.1s ease;
     }
 
-    .btn-primary:active {
+    .btn-main:active {
       transform: scale(0.98);
-      background-color: #059669;
     }
 
-    .btn-primary:disabled {
-      background-color: #374151;
-      color: #9ca3af;
-      cursor: not-allowed;
+    /* 开始跑步按钮 (醒目大绿键) */
+    .btn-start {
+      background-color: var(--accent-green);
+      color: #000;
+    }
+
+    /* 打卡 500 米按钮 (默认隐藏，开始后显示) */
+    .btn-punch {
+      background-color: var(--accent-blue);
+      color: #fff;
+      display: none;
     }
 
     .btn-group {
@@ -190,12 +196,17 @@
     .btn-secondary:active {
       background-color: #3f3f46;
     }
+
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div id="statusBadge" class="status-badge">准备就绪 (0.0 km)</div>
+    <div id="statusBadge" class="status-badge">准备就绪 (等待开始)</div>
     
     <div class="metrics-container">
       <div class="metric-box">
@@ -213,20 +224,23 @@
     </div>
   </header>
 
-  <!-- 6公里分段及运动员/赛车竞技场 -->
+  <!-- 6公里分段及竞技场 -->
   <div class="track-list" id="trackList"></div>
 
   <div class="control-area">
-    <button id="actionBtn" class="btn-primary" onclick="handlePunch()">到了！打卡下一个500米</button>
+    <!-- 独立的开始按钮与打卡按钮 -->
+    <button id="startBtn" class="btn-main btn-start" onclick="startWorkout()">🚀 开始跑步</button>
+    <button id="punchBtn" class="btn-main btn-punch" onclick="handlePunch()">🏁 到了！打卡下一个500米</button>
+    
     <div class="btn-group">
-      <button class="btn-secondary" onclick="resetWorkout()">清零</button>
-      <button id="pauseBtn" class="btn-secondary" onclick="togglePause()">暂停跑步</button>
+      <button id="resetBtn" class="btn-secondary" onclick="resetWorkout()">清零</button>
+      <button id="pauseBtn" class="btn-secondary" onclick="togglePause()" disabled>暂停跑步</button>
     </div>
   </div>
 
 <script>
   const TOTAL_DISTANCE = 6.0; 
-  const STEP_DISTANCE = 0.5;  
+  const STEP_DISTANCE = 0.5;  // 每次打卡 500米
   
   let currentKm = 0;          
   let startTime = null;       
@@ -332,16 +346,31 @@
     }, 1000);
   }
 
-  function handlePunch() {
-    if (navigator.vibrate) navigator.vibrate(50);
+  // 1. 点击“开始跑步”：正式记录起跑时间戳，激活防锁屏与计时，切换按钮
+  function startWorkout() {
+    if (navigator.vibrate) navigator.vibrate(60);
 
-    if (!isRunning && !isPaused) {
-      isRunning = true;
-      startTime = Date.now();
-      elapsedSeconds = 0;
-      requestWakeLock();
-      startTimer();
-    }
+    isRunning = true;
+    isPaused = false;
+    startTime = Date.now();
+    elapsedSeconds = 0;
+    
+    requestWakeLock();
+    startTimer();
+
+    // 切换按钮显示
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('punchBtn').style.display = 'block';
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('statusBadge').innerText = "🏃 正在跑步 (0.0 km)";
+    
+    renderTracks();
+  }
+
+  // 2. 点击“打卡下一个500米”
+  function handlePunch() {
+    if (!isRunning) return;
+    if (navigator.vibrate) navigator.vibrate(50);
 
     if (currentKm < TOTAL_DISTANCE) {
       currentKm = Math.min(currentKm + STEP_DISTANCE, TOTAL_DISTANCE);
@@ -354,8 +383,9 @@
       releaseWakeLock();
       clearInterval(timerInterval);
       document.getElementById('statusBadge').innerText = "🎉 挑战完成！";
-      document.getElementById('actionBtn').innerText = "已完成全部 6 公里";
-      document.getElementById('actionBtn').disabled = true;
+      document.getElementById('punchBtn').innerText = "已完成全部 6 公里";
+      document.getElementById('punchBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = true;
     }
   }
 
@@ -385,7 +415,7 @@
       const estSec = Math.floor(estTotalSec % 60).toString().padStart(2, '0');
       document.getElementById('estimatedTime').innerText = `${estMin}:${estSec}`;
 
-      document.getElementById('statusBadge').innerText = `打卡成功 (${currentKm.toFixed(1)} km)`;
+      document.getElementById('statusBadge').innerText = `已打卡 (${currentKm.toFixed(1)} km)`;
     }
     renderTracks();
   }
@@ -420,14 +450,19 @@
     if (timerInterval) clearInterval(timerInterval);
     releaseWakeLock();
 
-    document.getElementById('statusBadge').innerText = "准备就绪 (0.0 km)";
+    document.getElementById('statusBadge').innerText = "准备就绪 (等待开始)";
     document.getElementById('elapsedTime').innerText = "00:00";
     document.getElementById('estimatedTime').innerText = "--:--";
     document.getElementById('speedDisplay').innerText = "0.00 km/h";
     document.getElementById('paceDisplay').innerText = "--'--\"/km";
-    document.getElementById('actionBtn').innerText = "到了！打卡下一个500米";
-    document.getElementById('actionBtn').disabled = false;
+    
+    // 恢复初始按钮状态
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('punchBtn').style.display = 'none';
+    document.getElementById('punchBtn').innerText = "🏁 到了！打卡下一个500米";
+    document.getElementById('punchBtn').disabled = false;
     document.getElementById('pauseBtn').innerText = "暂停跑步";
+    document.getElementById('pauseBtn').disabled = true;
     
     renderTracks();
   }
