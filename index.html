@@ -5,7 +5,6 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
  <title>跑表 | 6公里直道竞技场</title>
  
- <!-- 苹果iOS完全全屏App化官方配置 -->
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <meta name="apple-mobile-web-app-title" content="竞技跑表">
@@ -21,12 +20,10 @@
     margin: 0; 
     background-color: #000000; 
     color: #ffffff; 
-    padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; /* 完美兼容全面屏刘海 */
+    padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; 
     box-sizing: border-box; 
-    -webkit-user-select: none; 
-    user-select: none; 
  }
- #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; transition: all 0.3s ease; margin-top: 10px; }
+ #status-bar { font-size: 13px; padding: 4px 14px; border-radius: 20px; background: #1c1c1e; color: #a2a2a2; margin-top: 10px; }
  .time-panel { width: 100%; display: flex; justify-content: space-around; text-align: center; }
  .time-box { flex: 1; }
  .label { font-size: 13px; color: #8e8e93; letter-spacing: 1px; margin-bottom: 2px; }
@@ -44,7 +41,7 @@
  .user-av { color: #34c759; font-weight: bold; transition: left 0.25s ease; }
  .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; }
  
- /* 完美适配任何触控环境的稳定样式 */
+ /* 🌟 iPhoneでタップを無効化していた原因（user-select等）を完全に削除 🌟 */
  .btn { 
     width: 100%; 
     border: none; 
@@ -53,8 +50,6 @@
     color: white; 
     cursor: pointer; 
     text-align: center; 
-    touch-action: manipulation; 
-    -webkit-tap-highlight-color: rgba(0,0,0,0); 
  }
  .btn-hit { padding: 22px 0; font-size: 22px; background-color: #34c759; box-shadow: 0 4px 15px rgba(52,199,89,0.3); }
  .btn-hit:active { transform: scale(0.98); }
@@ -259,3 +254,8 @@
  lapCount = 0;
  savedPredictedSeconds = 0;
  savedAvgSpeedText = "";
+ timeEl.innerText = "00:00";
+ remainingEl.innerText = "--:--";
+ predictionBox.innerText = "请点击下方“开始跑步”按钮";
+ statusBar.innerText = "⏳ 待机中";
+ startBtn.innerText = "开始跑步";
