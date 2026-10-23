@@ -217,17 +217,17 @@
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    /* 中间核心操作区（位于第三、四跑道之间） */
+    /* 核心操作按钮区（嵌入在第三和第四跑道之间） */
     .middle-action-area {
-      margin: 8px 0 16px 0;
+      margin: 8px 0;
     }
 
     .btn-main {
       width: 100%;
       border: none;
       border-radius: 18px;
-      padding: 20px;
-      font-size: 19px;
+      padding: 18px;
+      font-size: 18px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
@@ -259,10 +259,11 @@
       box-shadow: 0 8px 25px var(--accent-yellow-glow);
     }
 
-    /* 底部辅助控制区 */
+    /* 底部辅助控制区保持在最底 */
     .control-area {
       display: flex;
       gap: 12px;
+      margin-top: 16px;
     }
 
     .btn-secondary {
@@ -309,15 +310,8 @@
     </div>
   </header>
 
-  <!-- 中间赛道竞技场 (内含分段成绩) -->
+  <!-- 中间赛道竞技场 (内含分段成绩与精准插入的按钮) -->
   <div class="track-list" id="trackList"></div>
-
-  <!-- 核心操作按钮（精确放置在中间偏下位置，方便盲按） -->
-  <div class="middle-action-area">
-    <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
-    <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
-    <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
-  </div>
 
   <!-- 底部辅助控制区 -->
   <div class="control-area">
@@ -360,7 +354,7 @@
     const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
     const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
 
-    tracks.forEach((track) => {
+    tracks.forEach((track, index) => {
       const statusClass = (currentKm >= track.end || currentKm > track.start) ? 'completed' : 'pending';
 
       const lSec = lapTimes[track.id];
@@ -416,7 +410,49 @@
         </div>
       `;
       listEl.appendChild(div);
+
+      // 【关键逻辑】：当渲染完第 3 个赛道（即索引为 2）之后，自动把核心操作大按钮插入到第3和第4跑道中间！
+      if (index === 2) {
+        const actionAreaDiv = document.createElement('div');
+        actionAreaDiv.className = 'middle-action-area';
+        actionAreaDiv.innerHTML = `
+          <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
+          <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
+          <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
+        `;
+        listEl.appendChild(actionAreaDiv);
+      }
     });
+
+    // 恢复当前状态下按钮的显示状态（防止重新渲染时按钮样式重置）
+    updateButtonVisibility();
+  }
+
+  function updateButtonVisibility() {
+    const warmupBtn = document.getElementById('warmupBtn');
+    const runStartBtn = document.getElementById('runStartBtn');
+    const punchBtn = document.getElementById('punchBtn');
+    if (!warmupBtn) return;
+
+    if (workflowState === 'ready') {
+      warmupBtn.style.display = 'block';
+      runStartBtn.style.display = 'none';
+      punchBtn.style.display = 'none';
+    } else if (workflowState === 'warming') {
+      warmupBtn.style.display = 'none';
+      runStartBtn.style.display = 'block';
+      punchBtn.style.display = 'none';
+    } else if (workflowState === 'running') {
+      warmupBtn.style.display = 'none';
+      runStartBtn.style.display = 'none';
+      punchBtn.style.display = 'block';
+    } else if (workflowState === 'finished') {
+      warmupBtn.style.display = 'none';
+      runStartBtn.style.display = 'none';
+      punchBtn.style.display = 'block';
+      punchBtn.innerText = "已完成全部 6 公里";
+      punchBtn.disabled = true;
+    }
   }
 
   async function requestWakeLock() {
@@ -468,9 +504,8 @@
       workflowState = 'warming';
       requestWakeLock(); // 热身即不锁屏
 
-      document.getElementById('warmupBtn').style.display = 'none';
-      document.getElementById('runStartBtn').style.display = 'block';
       document.getElementById('statusBadge').innerText = "🧘 正在热身中 (屏幕常亮)";
+      renderTracks();
 
     } else if (workflowState === 'warming') {
       // 阶段 2：点击“开始跑步” -> 正式开始计时，转换成“打卡”按钮
@@ -483,8 +518,6 @@
       requestWakeLock();
       startTimer();
 
-      document.getElementById('runStartBtn').style.display = 'none';
-      document.getElementById('punchBtn').style.display = 'block';
       document.getElementById('pauseBtn').disabled = false;
       document.getElementById('statusBadge').innerText = "🔥 正在跑步中 (0.0 km)";
 
@@ -516,9 +549,8 @@
         releaseWakeLock();
         clearInterval(timerInterval);
         document.getElementById('statusBadge').innerText = "🎉 挑战圆满完成！";
-        document.getElementById('punchBtn').innerText = "已完成全部 6 公里";
-        document.getElementById('punchBtn').disabled = true;
         document.getElementById('pauseBtn').disabled = true;
+        renderTracks();
       }
     }
   }
@@ -593,12 +625,6 @@
     document.getElementById('estimatedTime').innerText = "--:--";
     document.getElementById('speedDisplay').innerText = "0.00 km/h";
     document.getElementById('paceDisplay').innerText = "--'--\"/km";
-    
-    document.getElementById('warmupBtn').style.display = 'block';
-    document.getElementById('runStartBtn').style.display = 'none';
-    document.getElementById('punchBtn').style.display = 'none';
-    document.getElementById('punchBtn').innerText = "🏁 到了！打卡下一个500米";
-    document.getElementById('punchBtn').disabled = false;
     document.getElementById('pauseBtn').innerText = "暂停跑步";
     document.getElementById('pauseBtn').disabled = true;
     
