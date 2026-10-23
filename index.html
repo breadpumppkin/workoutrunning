@@ -25,16 +25,18 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* 使用 Grid 网格布局：精准控制顶部、中部赛道及按钮、底部控制区的高度，保证手机上绝不乱跑 */
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      height: 100vh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
       padding: 12px 16px env(safe-area-inset-bottom, 20px) 16px;
-      overflow-x: hidden;
+      overflow: hidden;
       background-image: radial-gradient(circle at 50% 0%, #18182b 0%, transparent 70%);
     }
 
@@ -52,7 +54,7 @@
       border-radius: 20px;
       font-size: 11px;
       font-weight: 500;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .metrics-container {
@@ -60,11 +62,11 @@
       justify-content: space-around;
       align-items: center;
       width: 100%;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 8px 10px;
+      border-radius: 14px;
+      padding: 6px 10px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
@@ -74,7 +76,7 @@
     }
 
     .metric-label {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--text-muted);
       margin-bottom: 2px;
       text-transform: uppercase;
@@ -82,7 +84,7 @@
     }
 
     .metric-value {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       letter-spacing: 1px;
       font-variant-numeric: tabular-nums;
@@ -90,9 +92,8 @@
 
     .speed-info {
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
-      margin-bottom: 8px;
     }
 
     .speed-info span {
@@ -101,27 +102,29 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 中间赛道展示区 */
+    /* 中间赛道展示区：采用网格均匀分布，把核心按钮卡死在第3与第4跑道正中央 */
     .track-list {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: repeat(7, 1fr); /* 6条跑道 + 1个中间按钮区 = 7等分 */
       gap: 6px;
-      margin: 4px 0;
+      height: 100%;
     }
 
     .track-item {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 8px 14px;
+      border-radius: 10px;
+      padding: 6px 12px;
       border: 1px solid var(--border-color);
       position: relative;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     .track-item.completed {
       border-color: rgba(59, 130, 246, 0.25);
-      box-shadow: 0 4px 20px var(--accent-blue-glow);
+      box-shadow: 0 4px 15px var(--accent-blue-glow);
     }
 
     .track-item.pending {
@@ -133,7 +136,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .track-title-group {
@@ -144,7 +147,7 @@
 
     .track-title {
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
       color: #e5e7eb;
     }
 
@@ -157,39 +160,38 @@
 
     .track-range {
       color: var(--text-muted);
-      font-size: 10px;
+      font-size: 9px;
       background: rgba(255, 255, 255, 0.05);
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 1px 4px;
+      border-radius: 3px;
     }
 
     .track-lap-time {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--accent-blue);
       font-variant-numeric: tabular-nums;
       background: rgba(59, 130, 246, 0.1);
-      padding: 2px 8px;
-      border-radius: 6px;
+      padding: 1px 6px;
+      border-radius: 4px;
     }
 
     .track-lap-time.empty {
       color: #4b5563;
       background: transparent;
       font-weight: 400;
-      font-size: 11px;
+      font-size: 10px;
       padding: 0;
     }
 
     .track-bar-container {
-      height: 8px;
+      height: 6px;
       background: #0d0d12;
       border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
+      border-radius: 3px;
       position: relative;
       overflow: visible;
-      margin: 2px 0;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
     }
 
     .track-progress-fill {
@@ -197,7 +199,7 @@
       left: 0;
       top: 0;
       height: 100%;
-      border-radius: 4px;
+      border-radius: 3px;
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .track-item.completed .track-progress-fill {
@@ -209,29 +211,32 @@
 
     .racer-icon {
       position: absolute;
-      top: -10px;
+      top: -9px;
       transform: translateX(-50%) scaleX(-1);
-      font-size: 16px;
+      font-size: 14px;
       transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 3;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
 
-    /* 按钮卡片固定在第三、四跑道之间 */
+    /* 绝对卡在第 3 和第 4 跑道之间的核心操作按钮区 */
     .middle-action-item {
       background: linear-gradient(135deg, #13131a 0%, #1a1a24 100%);
-      border-radius: 12px;
-      padding: 10px 14px;
+      border-radius: 10px;
+      padding: 6px 10px;
       border: 2px dashed rgba(59, 130, 246, 0.4);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     .btn-main {
       width: 100%;
+      height: 100%;
       border: none;
-      border-radius: 10px;
-      padding: 18px;
-      font-size: 19px;
+      border-radius: 8px;
+      font-size: 18px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
@@ -267,7 +272,6 @@
     .control-area {
       display: flex;
       gap: 12px;
-      margin-top: 6px;
     }
 
     .btn-secondary {
@@ -275,9 +279,9 @@
       background: #181824;
       color: var(--text-main);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 12px;
-      font-size: 14px;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       touch-action: manipulation;
@@ -314,13 +318,13 @@
     </div>
   </header>
 
-  <!-- 中间赛道展示区：直接写死 HTML 结构，确保按钮绝对在第 3 和第 4 跑道正中间 -->
+  <!-- 中间赛道展示区：严格网格 7 等分，第 4 行死死卡住核心按钮 -->
   <div class="track-list" id="trackList">
     <div id="track-1" class="track-item pending"></div>
     <div id="track-2" class="track-item pending"></div>
     <div id="track-3" class="track-item pending"></div>
 
-    <!-- 核心操作按钮直接卡在中间 -->
+    <!-- 核心操作按钮：完美卡在第 3 和第 4 跑道正中间 -->
     <div class="middle-action-item">
       <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
       <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
