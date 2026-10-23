@@ -33,7 +33,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px 16px env(safe-area-inset-bottom, 24px) 16px;
+      padding: 12px 16px env(safe-area-inset-bottom, 20px) 16px;
       overflow-x: hidden;
       background-image: radial-gradient(circle at 50% 0%, #18182b 0%, transparent 70%);
     }
@@ -48,11 +48,11 @@
       background: rgba(59, 130, 246, 0.12);
       border: 1px solid rgba(59, 130, 246, 0.3);
       color: var(--accent-blue);
-      padding: 5px 16px;
+      padding: 4px 14px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
     }
 
     .metrics-container {
@@ -60,11 +60,11 @@
       justify-content: space-around;
       align-items: center;
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
-      padding: 14px 10px;
+      border-radius: 16px;
+      padding: 8px 10px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
@@ -74,15 +74,15 @@
     }
 
     .metric-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
 
     .metric-value {
-      font-size: 30px;
+      font-size: 24px;
       font-weight: 700;
       letter-spacing: 1px;
       font-variant-numeric: tabular-nums;
@@ -90,9 +90,9 @@
 
     .speed-info {
       text-align: center;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
     .speed-info span {
@@ -101,19 +101,20 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 中间赛道展示区 */
+    /* 中间赛道展示区：采用均匀分布，让第3/4跑道自然处于屏幕物理正中央 */
     .track-list {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
+      justify-content: center;
+      gap: 8px;
+      margin: 4px 0;
     }
 
     .track-item {
       background: var(--card-bg);
-      border-radius: 14px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 10px 14px;
       border: 1px solid var(--border-color);
       position: relative;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -133,7 +134,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 4px;
     }
 
     .track-title-group {
@@ -144,7 +145,7 @@
 
     .track-title {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       color: #e5e7eb;
     }
 
@@ -157,14 +158,14 @@
 
     .track-range {
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 10px;
       background: rgba(255, 255, 255, 0.05);
       padding: 2px 6px;
       border-radius: 4px;
     }
 
     .track-lap-time {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--accent-blue);
       font-variant-numeric: tabular-nums;
@@ -177,18 +178,18 @@
       color: #4b5563;
       background: transparent;
       font-weight: 400;
-      font-size: 12px;
+      font-size: 11px;
       padding: 0;
     }
 
     .track-bar-container {
-      height: 14px;
+      height: 10px;
       background: #0d0d12;
       border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 7px;
+      border-radius: 5px;
       position: relative;
       overflow: visible;
-      margin: 6px 0 2px 0;
+      margin: 4px 0 2px 0;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
     }
 
@@ -197,7 +198,7 @@
       left: 0;
       top: 0;
       height: 100%;
-      border-radius: 6px;
+      border-radius: 4px;
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .track-item.completed .track-progress-fill {
@@ -209,25 +210,30 @@
 
     .racer-icon {
       position: absolute;
-      top: -11px;
+      top: -10px;
       transform: translateX(-50%) scaleX(-1);
-      font-size: 18px;
+      font-size: 16px;
       transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 3;
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    /* 核心操作按钮区（嵌入在第三和第四跑道之间） */
+    /* 核心操作按钮区：放在第 3 和第 4 跑道正中间，做成超级醒目的大按钮 */
     .middle-action-area {
-      margin: 8px 0;
+      margin: 10px 0;
+      padding: 6px;
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 18px;
+      border: 1px dashed rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
     }
 
     .btn-main {
       width: 100%;
       border: none;
-      border-radius: 18px;
-      padding: 18px;
-      font-size: 18px;
+      border-radius: 14px;
+      padding: 22px;
+      font-size: 21px;
       font-weight: 700;
       cursor: pointer;
       touch-action: manipulation;
@@ -242,28 +248,28 @@
     .btn-start {
       background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
       color: #fff;
-      box-shadow: 0 8px 25px var(--accent-blue-glow);
+      box-shadow: 0 10px 30px var(--accent-blue-glow);
     }
 
     .btn-run {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #fff;
       display: none;
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
     }
 
     .btn-punch {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: #000;
       display: none;
-      box-shadow: 0 8px 25px var(--accent-yellow-glow);
+      box-shadow: 0 10px 30px var(--accent-yellow-glow);
     }
 
-    /* 底部辅助控制区保持在最底 */
+    /* 底部辅助控制区 */
     .control-area {
       display: flex;
       gap: 12px;
-      margin-top: 16px;
+      margin-top: 6px;
     }
 
     .btn-secondary {
@@ -310,7 +316,7 @@
     </div>
   </header>
 
-  <!-- 中间赛道竞技场 (内含分段成绩与精准插入的按钮) -->
+  <!-- 中间赛道竞技场 (内含分段成绩与完美居中的按钮) -->
   <div class="track-list" id="trackList"></div>
 
   <!-- 底部辅助控制区 -->
@@ -330,11 +336,10 @@
   let isRunning = false;      
   let isPaused = false;       
   let wakeLock = null;        
-  let workflowState = 'ready'; // 'ready' -> 'warming' -> 'running' -> 'finished'
+  let workflowState = 'ready'; 
 
-  // 防误触保护：记录上一次点击时间
   let lastClickTime = 0;
-  const COOLDOWN_TIME = 1000; // 1秒内重复点击直接忽略
+  const COOLDOWN_TIME = 1000; 
 
   let lapTimes = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
@@ -406,12 +411,12 @@
         <div class="track-bar-container">
           <div class="track-progress-fill" style="width: ${runnerPct}%"></div>
           ${showRunner ? `<div class="racer-icon" style="left: ${runnerPct}%" title="运动员(你)">🏃</div>` : ''}
-          ${showCar ? `<div class="racer-icon" style="left: ${carPct}%; font-size: 18px;" title="35分钟蓝色赛车">🏎️</div>` : ''}
+          ${showCar ? `<div class="racer-icon" style="left: ${carPct}%; font-size: 16px;" title="35分钟蓝色赛车">🏎️</div>` : ''}
         </div>
       `;
       listEl.appendChild(div);
 
-      // 【关键逻辑】：当渲染完第 3 个赛道（即索引为 2）之后，自动把核心操作大按钮插入到第3和第4跑道中间！
+      // 严格在第 3 跑道和第 4 跑道之间插入主按钮
       if (index === 2) {
         const actionAreaDiv = document.createElement('div');
         actionAreaDiv.className = 'middle-action-area';
@@ -424,7 +429,6 @@
       }
     });
 
-    // 恢复当前状态下按钮的显示状态（防止重新渲染时按钮样式重置）
     updateButtonVisibility();
   }
 
@@ -489,26 +493,22 @@
     }, 1000);
   }
 
-  // 核心统一按钮触发器（带 1 秒误触保护）
   function handleMainAction() {
     const now = Date.now();
     if (now - lastClickTime < COOLDOWN_TIME) {
-      console.log('触发防误触保护：1秒内多次点击，已忽略');
+      console.log('防误触保护触发');
       return;
     }
     lastClickTime = now;
     if (navigator.vibrate) navigator.vibrate(60);
 
     if (workflowState === 'ready') {
-      // 阶段 1：点击“开始热身” -> 开启防锁屏，转换成“开始跑步”
       workflowState = 'warming';
-      requestWakeLock(); // 热身即不锁屏
-
+      requestWakeLock(); 
       document.getElementById('statusBadge').innerText = "🧘 正在热身中 (屏幕常亮)";
       renderTracks();
 
     } else if (workflowState === 'warming') {
-      // 阶段 2：点击“开始跑步” -> 正式开始计时，转换成“打卡”按钮
       workflowState = 'running';
       isRunning = true;
       isPaused = false;
@@ -520,11 +520,9 @@
 
       document.getElementById('pauseBtn').disabled = false;
       document.getElementById('statusBadge').innerText = "🔥 正在跑步中 (0.0 km)";
-
       renderTracks();
 
     } else if (workflowState === 'running' && isRunning) {
-      // 阶段 3：跑步中点击“打卡下一个500米”
       const prevKm = currentKm;
       if (currentKm < TOTAL_DISTANCE) {
         currentKm = Math.min(currentKm + STEP_DISTANCE, TOTAL_DISTANCE);
