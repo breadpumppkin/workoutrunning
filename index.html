@@ -32,7 +32,9 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      /* 移除 space-between，改成按顺序紧凑排列，避免按钮被挤到最下方 */
+      justify-content: flex-start;
+      gap: 12px;
       padding: 12px 16px env(safe-area-inset-bottom, 20px) 16px;
       overflow-x: hidden;
       background-image: radial-gradient(circle at 50% 0%, #18182b 0%, transparent 70%);
@@ -92,7 +94,7 @@
       text-align: center;
       font-size: 12px;
       color: var(--text-muted);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .speed-info span {
@@ -101,13 +103,57 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* 【核心置顶大按钮卡片区域】：直接放在面板下方、赛道上方，绝对在视觉中心！ */
+    .top-priority-action {
+      background: linear-gradient(135deg, #13131a 0%, #1a1a24 100%);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 2px solid rgba(59, 130, 246, 0.4);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-main {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 20px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      letter-spacing: 0.5px;
+      transition: transform 0.1s ease;
+    }
+
+    .btn-main:active {
+      transform: scale(0.97);
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 8px 25px var(--accent-blue-glow);
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      display: none;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-punch {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #000;
+      display: none;
+      box-shadow: 0 8px 25px var(--accent-yellow-glow);
+    }
+
     /* 中间赛道展示区 */
     .track-list {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin: 4px 0;
     }
 
     .track-item {
@@ -217,57 +263,11 @@
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    /* 【彻底修复】：完全流式布局，作为列表中的一项，绝对不浮动、不遮挡 */
-    .middle-action-item {
-      background: linear-gradient(135deg, #13131a 0%, #1a1a24 100%);
-      border-radius: 12px;
-      padding: 10px 14px;
-      border: 2px dashed rgba(59, 130, 246, 0.4);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn-main {
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      touch-action: manipulation;
-      letter-spacing: 0.5px;
-      transition: transform 0.1s ease;
-    }
-
-    .btn-main:active {
-      transform: scale(0.97);
-    }
-
-    .btn-start {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: #fff;
-      box-shadow: 0 6px 20px var(--accent-blue-glow);
-    }
-
-    .btn-run {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #fff;
-      display: none;
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
-    }
-
-    .btn-punch {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #000;
-      display: none;
-      box-shadow: 0 6px 20px var(--accent-yellow-glow);
-    }
-
     /* 底部辅助控制区 */
     .control-area {
       display: flex;
       gap: 12px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     .btn-secondary {
@@ -275,9 +275,9 @@
       background: #181824;
       color: var(--text-main);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 12px;
-      font-size: 14px;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       touch-action: manipulation;
@@ -314,7 +314,14 @@
     </div>
   </header>
 
-  <!-- 中间赛道展示区：按钮将作为常规列表项嵌入在第3和第4跑道之间 -->
+  <!-- 置顶核心操作按钮区（位于面板下方、赛道上方，手机上睁眼就能直接点到，完全不遮挡） -->
+  <div class="top-priority-action">
+    <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
+    <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
+    <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
+  </div>
+
+  <!-- 中间赛道展示区 -->
   <div class="track-list" id="trackList"></div>
 
   <!-- 底部辅助控制区 -->
@@ -357,7 +364,7 @@
     const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
     const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
 
-    tracks.forEach((track, index) => {
+    tracks.forEach((track) => {
       const statusClass = (currentKm >= track.end || currentKm > track.start) ? 'completed' : 'pending';
 
       const lSec = lapTimes[track.id];
@@ -413,18 +420,6 @@
         </div>
       `;
       listEl.appendChild(div);
-
-      // 【严格自然嵌入】：在第 3 个赛道渲染完后，像插入普通卡片一样把按钮插进去
-      if (index === 2) {
-        const actionItemDiv = document.createElement('div');
-        actionItemDiv.className = 'middle-action-item';
-        actionItemDiv.innerHTML = `
-          <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
-          <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
-          <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
-        `;
-        listEl.appendChild(actionItemDiv);
-      }
     });
 
     updateButtonVisibility();
