@@ -35,12 +35,14 @@
       justify-content: space-between;
       padding: 12px 16px env(safe-area-inset-bottom, 20px) 16px;
       overflow-x: hidden;
+      position: relative;
       background-image: radial-gradient(circle at 50% 0%, #18182b 0%, transparent 70%);
     }
 
     /* 顶部状态与数据面板区 */
     header {
       text-align: center;
+      z-index: 2;
     }
 
     .status-badge {
@@ -101,7 +103,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 中间赛道展示区：采用均匀分布，让第3/4跑道自然处于屏幕物理正中央 */
+    /* 中间赛道展示区 */
     .track-list {
       flex: 1;
       display: flex;
@@ -109,6 +111,7 @@
       justify-content: center;
       gap: 8px;
       margin: 4px 0;
+      z-index: 1;
     }
 
     .track-item {
@@ -218,14 +221,21 @@
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
     }
 
-    /* 核心操作按钮区：放在第 3 和第 4 跑道正中间，做成超级醒目的大按钮 */
+    /* 【核心修改】：通过 absolute/fixed 强行将按钮固定在屏幕正中央，绝对不会在下面 */
     .middle-action-area {
-      margin: 10px 0;
-      padding: 6px;
-      background: rgba(59, 130, 246, 0.05);
-      border-radius: 18px;
-      border: 1px dashed rgba(59, 130, 246, 0.3);
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      z-index: 999;
+      padding: 8px;
+      background: rgba(8, 8, 12, 0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 2px solid rgba(59, 130, 246, 0.5);
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(59, 130, 246, 0.4);
     }
 
     .btn-main {
@@ -270,6 +280,7 @@
       display: flex;
       gap: 12px;
       margin-top: 6px;
+      z-index: 2;
     }
 
     .btn-secondary {
@@ -316,8 +327,15 @@
     </div>
   </header>
 
-  <!-- 中间赛道竞技场 (内含分段成绩与完美居中的按钮) -->
+  <!-- 中间赛道展示区 -->
   <div class="track-list" id="trackList"></div>
+
+  <!-- 绝对居中悬浮的核心操作按钮区 -->
+  <div class="middle-action-area">
+    <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
+    <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
+    <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
+  </div>
 
   <!-- 底部辅助控制区 -->
   <div class="control-area">
@@ -359,7 +377,7 @@
     const carTotalSeconds = isRunning || elapsedSeconds > 0 ? elapsedSeconds : 0;
     const carDistance = Math.min(carTotalSeconds * (6.0 / 2100), TOTAL_DISTANCE);
 
-    tracks.forEach((track, index) => {
+    tracks.forEach((track) => {
       const statusClass = (currentKm >= track.end || currentKm > track.start) ? 'completed' : 'pending';
 
       const lSec = lapTimes[track.id];
@@ -415,18 +433,6 @@
         </div>
       `;
       listEl.appendChild(div);
-
-      // 严格在第 3 跑道和第 4 跑道之间插入主按钮
-      if (index === 2) {
-        const actionAreaDiv = document.createElement('div');
-        actionAreaDiv.className = 'middle-action-area';
-        actionAreaDiv.innerHTML = `
-          <button id="warmupBtn" class="btn-main btn-start" onclick="handleMainAction()">🔥 开始热身</button>
-          <button id="runStartBtn" class="btn-main btn-run" onclick="handleMainAction()">🚀 开始跑步</button>
-          <button id="punchBtn" class="btn-main btn-punch" onclick="handleMainAction()">🏁 到了！打卡下一个500米</button>
-        `;
-        listEl.appendChild(actionAreaDiv);
-      }
     });
 
     updateButtonVisibility();
